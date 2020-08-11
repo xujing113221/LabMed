@@ -326,14 +326,14 @@ public class DiDataElement {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_ex/CTHd021";
+		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_ex/CTHd102";
 		DiFileInputStream df = new DiFileInputStream(fp);
 		DiDataElement dde = new DiDataElement();
 
-		for (int i = 0; i < 100; i++) {
+		do {
 			dde.readNext(df);
 			System.out.println(dde.toString());
-		}
+		} while (dde.getTag() < 0x7FE00010);
 
 		df.close();
 	}

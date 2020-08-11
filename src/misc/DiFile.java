@@ -68,7 +68,7 @@ public class DiFile {
 					break;
 			}
 		} while (tag != 0);
-		return;
+
 	}
 
 	/**
@@ -180,7 +180,7 @@ public class DiFile {
 	 * @throws Exception
 	 */
 	public static void main(final String[] args) throws Exception {
-		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_ex/CTHd081";
+		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_ex/CTHd001";
 		DiFile dif = new DiFile();
 		dif.initFromFile(fp);
 		String str = dif.toString();

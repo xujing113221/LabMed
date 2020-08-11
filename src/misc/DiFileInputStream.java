@@ -38,6 +38,7 @@ public class DiFileInputStream extends FileInputStream {
 		super(file);
 		_location = 0;
 		_little_endian = true;
+		_explicit_vr = true;
 	}
 
 	public int read() throws IOException {
@@ -191,7 +192,7 @@ public class DiFileInputStream extends FileInputStream {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_im/CTHd048";
+		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_ex/CTHd048";
 		DiFileInputStream df = new DiFileInputStream(fp);
 		if (df.skipHeader())
 			System.out.println("This is a DICOM data");
