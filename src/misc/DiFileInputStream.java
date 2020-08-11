@@ -12,6 +12,7 @@ import java.io.*;
 public class DiFileInputStream extends FileInputStream {
 	private int _location; // position in the file, equal to the number of bytes read
 	private boolean _little_endian;
+	private boolean _explicit_vr;
 
 	/**
 	 * Default Constructor, argument is a string containing the file name. Endianess
@@ -24,6 +25,7 @@ public class DiFileInputStream extends FileInputStream {
 		super(fname);
 		_location = 0;
 		_little_endian = true;
+		_explicit_vr = true;
 	}
 
 	/**
@@ -167,6 +169,19 @@ public class DiFileInputStream extends FileInputStream {
 	 */
 	public void set_little_endian(boolean little_endian) {
 		_little_endian = little_endian;
+	}
+
+	/**
+	 * set explicit_vr true or false
+	 * 
+	 * @param explicit_vr
+	 */
+	public void set_explicit_vr(boolean explicit_vr) {
+		_explicit_vr = explicit_vr;
+	}
+
+	public boolean get_explicit_vr() {
+		return _explicit_vr;
 	}
 
 	/**

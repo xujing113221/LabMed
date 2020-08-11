@@ -55,23 +55,40 @@ public class DiDataElement {
 		_elementid = eid;
 		int tag = getTag();
 
-		if (tag < 0x00020102) { // expliziter Fall
-			int vr1 = is.getByte();
-			int vr2 = is.getByte();
-			_vr = (vr1 << 8) | vr2;
-			if (_vr == DiDi.OB || _vr == DiDi.OW || _vr == DiDi.SQ || _vr == DiDi.UT || _vr == DiDi.UN) {
-				is.getShort();
-				_vl = is.getInt();
-			} else
-				_vl = is.getShort();
-			_values = new byte[_vl];
-			is.read(_values);
-		} else { // impliziter Fall
-			_vr = DiDi.getVR(tag);
-			_vl = is.getInt();
-			_values = new byte[_vl];
-			is.read(_values);
+		if (tag == 0x00020010) {
+			explicitVRreadNext(is);
+			if (_vl == 18) // vr = 1.2.840.10008.1.2
+				is.set_explicit_vr(false);
+			else if (_values[18] == '2') // vr = 1.2.840.10008.1.2.2
+				is.set_little_endian(false);
+		} else if (tag < 0x00020102) {
+			explicitVRreadNext(is);
+		} else {
+			if (is.get_explicit_vr())
+				explicitVRreadNext(is);
+			else
+				implicitVRreadNext(is, tag);
 		}
+	}
+
+	private void explicitVRreadNext(DiFileInputStream is) throws Exception {
+		int vr1 = is.getByte();
+		int vr2 = is.getByte();
+		_vr = (vr1 << 8) | vr2;
+		if (_vr == DiDi.OB || _vr == DiDi.OW || _vr == DiDi.SQ || _vr == DiDi.UT || _vr == DiDi.UN) {
+			is.getShort();
+			_vl = is.getInt();
+		} else
+			_vl = is.getShort();
+		_values = new byte[_vl];
+		is.read(_values);
+	}
+
+	private void implicitVRreadNext(DiFileInputStream is, int tag) throws Exception {
+		_vr = DiDi.getVR(tag);
+		_vl = is.getInt();
+		_values = new byte[_vl];
+		is.read(_values);
 	}
 
 	/**
@@ -309,7 +326,7 @@ public class DiDataElement {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_im/CTHd008";
+		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_ex/CTHd021";
 		DiFileInputStream df = new DiFileInputStream(fp);
 		DiDataElement dde = new DiDataElement();
 

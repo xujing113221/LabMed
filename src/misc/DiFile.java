@@ -180,7 +180,7 @@ public class DiFile {
 	 * @throws Exception
 	 */
 	public static void main(final String[] args) throws Exception {
-		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_im/CTHd008";
+		String fp = "/Users/xujing/Documents/Deutschland/Labor/LabMed/ct_head_ex/CTHd081";
 		DiFile dif = new DiFile();
 		dif.initFromFile(fp);
 		String str = dif.toString();
