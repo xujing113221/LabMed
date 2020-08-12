@@ -48,7 +48,7 @@ public class Viewport2d extends Viewport implements MyObserver {
 
 	// width and heigth of our images. dont mix those with
 	// Viewport2D width / height or Panel2d width / height!
-	private int _w, _h;
+	private int _w, _h, _view_mode;
 
 	/**
 	 * Private class, implementing the GUI element for displaying the 2d data.
@@ -148,6 +148,7 @@ public class Viewport2d extends Viewport implements MyObserver {
 
 		_slice_names = new DefaultListModel<String>();
 		_slice_names.addElement(" ----- ");
+		_view_mode = 0;
 
 		// create an empty 10x10 image as default
 		_bg_img = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
@@ -174,8 +175,6 @@ public class Viewport2d extends Viewport implements MyObserver {
 	 * viewmode). (see e.g. exercise 2)
 	 */
 	private void reallocate() {
-		_w = _slices.getImageWidth();
-		_h = _slices.getImageHeight();
 
 		// create background image
 		_bg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
@@ -200,12 +199,16 @@ public class Viewport2d extends Viewport implements MyObserver {
 			return;
 		}
 
-		// these are two variables you might need in exercise #2
-		int active_img_id = _slices.getActiveImageID();
-		DiFile active_file = _slices.getDiFile(active_img_id);
-
-		_w = 256;
-		_h = 256;
+		if (_view_mode == 0) {
+			_w = _slices.getImageWidth();
+			_h = _slices.getImageHeight();
+		} else if (_view_mode == 1) {
+			_w = _slices.getImageHeight();
+			_h = _slices.getNumberOfImages();
+		} else if (_view_mode == 2) {
+			_w = _slices.getImageWidth();
+			_h = _slices.getNumberOfImages();
+		}
 
 		// _w and _h need to be initialized BEFORE filling the image array !
 		if (_bg_img == null || _bg_img.getWidth(null) != _w || _bg_img.getHeight(null) != _h) {
@@ -214,19 +217,13 @@ public class Viewport2d extends Viewport implements MyObserver {
 
 		// rendering the background picture
 		if (_show_bg) {
-			byte[] pixels = active_file.getDataElements().get(0x7FE00010).getValues();
-			for (int x = 0; x < _w; x++)
-				for (int y = 0; y < _h; y++) {
-					int bit_off = active_file.getBitsAllocated() - active_file.getBitsStored();
-					int index = (x * _h + y) * 2;
-					int value = (pixels[index + 1] & 0xff) << 8 | (pixels[index] & 0xff);
-					value = 0xff - (value >> (bit_off));
-					if (value > 0xff)
-						value = 0xff;
-					if (value < 0)
-						value = 0;
-					_bg_img.setRGB(x, y, value << 24);
-				}
+			if (_view_mode == 0)
+				update_transversal();
+			else if (_view_mode == 1) {
+				update_sagittal();
+			} else if (_view_mode == 2) {
+				update_frontal();
+			}
 			// this is the place for the code displaying a single DICOM image in the 2d
 			// viewport (exercise 2)
 			//
@@ -255,6 +252,55 @@ public class Viewport2d extends Viewport implements MyObserver {
 		 */
 
 		repaint();
+	}
+
+	private int getPixelValueFromSlices(int x, int y, int z) {
+		int value = -1;
+		int slices_w = _slices.getImageWidth();
+		// int slices_h = _slices.getImageHeight();
+		// int slices_s = _slices.getNumberOfImages();
+
+		DiFile active_file = _slices.getDiFile(z);
+		byte[] pixels = active_file.getDataElements().get(0x7FE00010).getValues();
+		int bit_off = active_file.getBitsAllocated() - active_file.getBitsStored();
+		int index = (y * slices_w + x) * 2;
+		value = (pixels[index + 1] & 0xff) << 8 | (pixels[index] & 0xff);
+		value = 0xff - (value >> (bit_off));
+		if (value > 0xff)
+			value = 0xff;
+		if (value < 0)
+			value = 0;
+
+		return value;
+	}
+
+	private void update_transversal() {
+		int z = _slices.getActiveImageID();
+		for (int y = 0; y < _slices.getImageHeight(); y++)
+			for (int x = 0; x < _slices.getImageWidth(); x++) {
+				int value = getPixelValueFromSlices(y, x, z);
+				_bg_img.setRGB(x, y, value << 24);
+			}
+	}
+
+	private void update_sagittal() {
+		int z = _slices.getActiveImageID();
+		for (int y = 0; y < _slices.getNumberOfImages(); y++) {
+			for (int x = 0; x < _slices.getImageHeight(); x++) {
+				int value = getPixelValueFromSlices(z, x, y);
+				_bg_img.setRGB(x, y, value << 24);
+			}
+		}
+	}
+
+	private void update_frontal() {
+		int z = _slices.getActiveImageID();
+		for (int y = 0; y < _slices.getNumberOfImages(); y++) {
+			for (int x = 0; x < _slices.getImageWidth(); x++) {
+				int value = getPixelValueFromSlices(x, z, y);
+				_bg_img.setRGB(x, y, value << 24);
+			}
+		}
 	}
 
 	/**
@@ -349,6 +395,28 @@ public class Viewport2d extends Viewport implements MyObserver {
 	 */
 	public void setViewMode(int mode) {
 		// you should do something with the new viewmode here
-		System.out.println("Viewmode " + mode);
+		_view_mode = mode;
+		_slice_names.clear();
+
+		String name = new String();
+		int name_num = 0;
+		if (mode == 0) {
+			name_num = _slices.getNumberOfImages();
+			_slices.setActiveImage(72);
+		} else if (mode == 1)
+			name_num = _slices.getImageWidth();
+		else if (mode == 2)
+			name_num = _slices.getImageHeight();
+
+		for (int num = 0; num < name_num; num++) {
+			name = "" + num;
+			if (num < 10)
+				name = " " + name;
+			if (num < 100)
+				name = " " + name;
+			_slice_names.addElement(name);
+		}
+		update_view();
+		// System.out.println("Viewmode " + mode);
 	}
 }
