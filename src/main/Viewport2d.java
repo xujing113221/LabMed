@@ -250,6 +250,39 @@ public class Viewport2d extends Viewport implements MyObserver {
 		 * // to drawn a segmentation image, fill the pixel array seg_pixels // with
 		 * ARGB values similar to exercise 2 }
 		 */
+		for (String seg_name : _map_name_to_seg.keySet()) {
+			BufferedImage seg_img = _map_seg_name_to_img.get(seg_name);
+			int[] seg_pixels = ((DataBufferInt) seg_img.getRaster().getDataBuffer()).getData();
+			Segment seg = _slices.getSegment(seg_name);
+
+			for (int i = 0; i < seg_pixels.length; i++)
+				seg_pixels[i] = 0x00000000; // clear segement images
+
+			// seg.create_range_seg(0, 1500, _slices);
+			int color = seg.getColor();
+			if (_view_mode == 0) {
+				int z = _slices.getActiveImageID();
+				for (int y = 0; y < _h; y++)
+					for (int x = 0; x < _w; x++) {
+						if (seg.getMask(z).get(y, x))
+							seg_img.setRGB(x, y, (0xff000000 + color));
+					}
+			} else if (_view_mode == 1) {
+				int z = _slices.getActiveImageID();
+				for (int y = 0; y < _h; y++)
+					for (int x = 0; x < _w; x++) {
+						if (seg.getMask(y).get(z, x))
+							seg_img.setRGB(x, y, (0xff000000 + color));
+					}
+			} else if (_view_mode == 2) {
+				int z = _slices.getActiveImageID();
+				for (int y = 0; y < _h; y++)
+					for (int x = 0; x < _w; x++) {
+						if (seg.getMask(y).get(x, z))
+							seg_img.setRGB(x, y, (0xff000000 + color));
+					}
+			}
+		}
 
 		repaint();
 	}
@@ -260,9 +293,8 @@ public class Viewport2d extends Viewport implements MyObserver {
 		// int slices_h = _slices.getImageHeight();
 		// int slices_s = _slices.getNumberOfImages();
 
-		DiFile active_file = _slices.getDiFile(z);
-		byte[] pixels = active_file.getDataElements().get(0x7FE00010).getValues();
-		int bit_off = active_file.getBitsAllocated() - active_file.getBitsStored();
+		byte[] pixels = _slices.getDiFile(z).getElement(0x7FE00010).getValues();
+		int bit_off = _slices.getDiFile(z).getBitsAllocated() - _slices.getDiFile(z).getBitsStored();
 		int index = (y * slices_w + x) * 2;
 		value = (pixels[index + 1] & 0xff) << 8 | (pixels[index] & 0xff);
 		value = 0xff - (value >> (bit_off));
@@ -276,8 +308,8 @@ public class Viewport2d extends Viewport implements MyObserver {
 
 	private void update_transversal() {
 		int z = _slices.getActiveImageID();
-		for (int y = 0; y < _slices.getImageHeight(); y++)
-			for (int x = 0; x < _slices.getImageWidth(); x++) {
+		for (int y = 0; y < _h; y++)
+			for (int x = 0; x < _w; x++) {
 				int value = getPixelValueFromSlices(y, x, z);
 				_bg_img.setRGB(x, y, value << 24);
 			}
@@ -285,8 +317,8 @@ public class Viewport2d extends Viewport implements MyObserver {
 
 	private void update_sagittal() {
 		int z = _slices.getActiveImageID();
-		for (int y = 0; y < _slices.getNumberOfImages(); y++) {
-			for (int x = 0; x < _slices.getImageHeight(); x++) {
+		for (int y = 0; y < _h; y++) {
+			for (int x = 0; x < _w; x++) {
 				int value = getPixelValueFromSlices(z, x, y);
 				_bg_img.setRGB(x, y, value << 24);
 			}
@@ -295,8 +327,8 @@ public class Viewport2d extends Viewport implements MyObserver {
 
 	private void update_frontal() {
 		int z = _slices.getActiveImageID();
-		for (int y = 0; y < _slices.getNumberOfImages(); y++) {
-			for (int x = 0; x < _slices.getImageWidth(); x++) {
+		for (int y = 0; y < _h; y++) {
+			for (int x = 0; x < _w; x++) {
 				int value = getPixelValueFromSlices(x, z, y);
 				_bg_img.setRGB(x, y, value << 24);
 			}
