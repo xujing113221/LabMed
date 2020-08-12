@@ -176,6 +176,8 @@ public class Viewport2d extends Viewport implements MyObserver {
 	 */
 	private void reallocate() {
 
+		if (_w <= 0 || _h <= 0)
+			return;
 		// create background image
 		_bg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
 
