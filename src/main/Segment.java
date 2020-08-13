@@ -14,6 +14,8 @@ public class Segment {
 	private int _color; // the segment color
 	private int _w; // Bitmask width
 	private int _h; // Bitmask height
+	private int _max;
+	private int _min;
 	private BitMask[] _layers; // each segment contains an array of n bitmasks
 
 	/**
@@ -29,6 +31,8 @@ public class Segment {
 		this._w = w;
 		this._h = h;
 
+		_max = 4000;
+		_min = 1000;
 		_color = 0xff00ff;
 		_layers = new BitMask[layer_num];
 
@@ -40,6 +44,10 @@ public class Segment {
 	public void create_range_seg(int min, int max, ImageStack slices) {
 		if (min > max)
 			return;
+
+		_max = max;
+		_min = min;
+
 		int images_cnt = slices.getNumberOfImages();
 		for (int i = 0; i < images_cnt; i++) {
 			byte[] pixels = slices.getDiFile(i).getElement(0x7FE00010).getValues();
@@ -108,5 +116,13 @@ public class Segment {
 	 */
 	public void setColor(int color) {
 		_color = color;
+	}
+
+	public int get_max() {
+		return _max;
+	}
+
+	public int get_min() {
+		return _min;
 	}
 }

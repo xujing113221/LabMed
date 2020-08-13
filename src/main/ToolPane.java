@@ -14,16 +14,16 @@ import javax.swing.border.LineBorder;
 public class ToolPane extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private JPanel _active_panel;
-	
+
 	/**
 	 * Default Constructor. Creates an empty ToolPane with no active panel.
 	 *
 	 */
 	public ToolPane() {
-		this.setPreferredSize(new Dimension(800,200));
-		setBorder( new LineBorder(Color.black, 1));
+		this.setPreferredSize(new Dimension(800, 200));
+		setBorder(new LineBorder(Color.black, 1));
 		_active_panel = null;
-		setLayout(new BorderLayout(0,0));
+		setLayout(new BorderLayout(0, 0));
 	}
 
 	/**
@@ -32,7 +32,7 @@ public class ToolPane extends JPanel {
 	 * @param panel the new panel to show
 	 */
 	public void showTool(JPanel panel) {
-		if(_active_panel!=null) {
+		if (_active_panel != null) {
 			this.remove(_active_panel);
 		}
 

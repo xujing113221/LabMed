@@ -34,6 +34,9 @@ public class Viewport2d extends Viewport implements MyObserver {
 	// MemoryImageSource
 	private BufferedImage _bg_img;
 
+	private int _window_width;
+	private int _window_center;
+
 	// each segmentation image needs the same, those are stored in a hashtable
 	// and referenced by the segmentation name
 	private Hashtable<String, BufferedImage> _map_seg_name_to_img;
@@ -149,6 +152,8 @@ public class Viewport2d extends Viewport implements MyObserver {
 		_slice_names = new DefaultListModel<String>();
 		_slice_names.addElement(" ----- ");
 		_view_mode = 0;
+		_window_center = (int) (50 * 40.95);
+		_window_width = (int) (50 * 40.95);
 
 		// create an empty 10x10 image as default
 		_bg_img = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
@@ -287,6 +292,8 @@ public class Viewport2d extends Viewport implements MyObserver {
 		}
 
 		repaint();
+		// System.out.println("_windows_width: " + _window_width + "\t_windows_center: "
+		// + _window_center);
 	}
 
 	private int getPixelValueFromSlices(int x, int y, int z) {
@@ -299,13 +306,26 @@ public class Viewport2d extends Viewport implements MyObserver {
 		int bit_off = _slices.getDiFile(z).getBitsAllocated() - _slices.getDiFile(z).getBitsStored();
 		int index = (y * slices_w + x) * 2;
 		value = (pixels[index + 1] & 0xff) << 8 | (pixels[index] & 0xff);
-		value = 0xff - (value >> (bit_off));
-		if (value > 0xff)
-			value = 0xff;
-		if (value < 0)
-			value = 0;
 
-		return value;
+		return pixelToValue256(value);
+	}
+
+	private int pixelToValue256(int pixel) {
+		int value = 0;
+		int max = _window_center + _window_width + 1;
+		int min = _window_center - _window_width;
+
+		if (min < 0)
+			min = 0;
+		if (max > 4095)
+			max = 4095;
+		if (pixel > max)
+			value = 255;
+		else if (pixel < min)
+			value = 0;
+		else
+			value = (int) ((pixel - min) * (255.0 / (max - min)));
+		return (0xff - value);
 	}
 
 	private void update_transversal() {
@@ -335,6 +355,22 @@ public class Viewport2d extends Viewport implements MyObserver {
 				_bg_img.setRGB(x, y, value << 24);
 			}
 		}
+	}
+
+	public void setWindowWidth(int w) {
+		_window_width = w;
+	}
+
+	public void setWindowCenter(int c) {
+		_window_center = c;
+	}
+
+	public int getWindowWidth() {
+		return _window_width;
+	}
+
+	public int getWindowCenter() {
+		return _window_center;
 	}
 
 	/**

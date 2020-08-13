@@ -12,12 +12,12 @@ public class ToolWindowSelector extends JPanel {
     private JSlider _width_slider, _center_slider;
     private JLabel _width_label, _center_label;
 
-    public ToolWindowSelector() {
+    public ToolWindowSelector(Viewport2d v2d) {
         JLabel win_set_tilte = new JLabel("Window Range Selector");
 
         int range_max = 100;
-        _width = 50;
-        _center = 50;
+        _width = (int) (v2d.getWindowWidth() / 40.95 + 1);
+        _center = (int) (v2d.getWindowCenter() / 40.95 + 1);
 
         _width_label = new JLabel("Width:" + _width);
         _center_label = new JLabel("Center:" + _center);
@@ -29,7 +29,9 @@ public class ToolWindowSelector extends JPanel {
                 if (source.getValueIsAdjusting()) {
                     _width = (int) source.getValue();
                     _width_label.setText("Width:" + _width);
-                    System.out.println("_width_slider stateChanged: " + _width);
+                    v2d.setWindowWidth((int) (_width * 40.95));
+                    v2d.update_view();
+                    // System.out.println("_width_slider stateChanged: " + _width);
                 }
             }
         });
@@ -41,7 +43,9 @@ public class ToolWindowSelector extends JPanel {
                 if (source.getValueIsAdjusting()) {
                     _center = (int) source.getValue();
                     _center_label.setText("Center:" + _center);
-                    System.out.println("_center_slider stateChanged: " + _center);
+                    v2d.setWindowCenter((int) (_center * 40.95));
+                    v2d.update_view();
+                    // System.out.println("_center_slider stateChanged: " + _center);
                 }
             }
         });

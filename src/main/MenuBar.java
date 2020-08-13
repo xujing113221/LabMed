@@ -23,6 +23,7 @@ public class MenuBar extends JMenuBar {
 	private JMenu _menuRGSeg;
 	private JMenuItem _no_entries2d;
 	private JMenuItem _no_entries3d;
+	private JMenuItem _tools_show_seg;
 	private InfoWindow _info_frame;
 	private ToolPane _tools;
 
@@ -134,8 +135,13 @@ public class MenuBar extends JMenuBar {
 		item.addActionListener(newSegmentListener);
 		_menuTools.add(item);
 
+		_tools_show_seg = new JMenuItem(new String("Show Segemet Tool"));
+		_tools_show_seg.addActionListener(showSegementListener);
+		_tools_show_seg.setEnabled(false);
+		_menuTools.add(_tools_show_seg);
+
 		// -------------------------------------------------------------------------------------
-		item = new JMenuItem(new String("Show Setting Bar"));
+		item = new JMenuItem(new String("Show Setting Tool"));
 		item.addActionListener(windowSettingListener);
 		_menuWinSet.add(item);
 		// -------------------------------------------------------------------------------------
@@ -327,15 +333,25 @@ public class MenuBar extends JMenuBar {
 					item = new JCheckBoxMenuItem(name, false);
 					item.addActionListener(toggleSegListener3d);
 					_menu3d.add(item);
-					_tools.showTool(new ToolRangeSelector(seg));
+					// _tools.showTool(new ToolRangeSelector(seg));
+					_tools.showTool(new ToolRangeSelector(_v2d, seg));
+					_tools_show_seg.setEnabled(true);
 				}
 			}
 		}
 	};
 
+	ActionListener showSegementListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			String seg_name = _v2d._slices.getSegNames().getElementAt(0);
+			Segment seg = _v2d._slices.getSegment(seg_name);
+			_tools.showTool(new ToolRangeSelector(_v2d, seg));
+		}
+	};
+
 	ActionListener windowSettingListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
-			_tools.showTool(new ToolWindowSelector());
+			_tools.showTool(new ToolWindowSelector(_v2d));
 		}
 	};
 }

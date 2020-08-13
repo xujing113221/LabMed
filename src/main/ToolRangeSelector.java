@@ -27,7 +27,8 @@ public class ToolRangeSelector extends JPanel {
 	 * @param slices the global image stack
 	 * @param seg    the segmentation to be modified
 	 */
-	public ToolRangeSelector(Segment seg) {
+	// public ToolRangeSelector(Segment seg) {
+	public ToolRangeSelector(Viewport2d v2d, Segment seg) {
 		_seg = seg;
 
 		final ImageStack slices = ImageStack.getInstance();
@@ -44,7 +45,10 @@ public class ToolRangeSelector extends JPanel {
 				if (!_seg.getName().equals(name)) {
 					_seg = slices.getSegment(name);
 					_range_sel_title.setText("Range Selector - " + _seg.getName());
-					// ...
+					_min = (int) (_seg.get_min() / 40.95 + 1);
+					_max = (int) (_seg.get_max() / 40.95 + 1);
+					_min_slider.setValue(_min);
+					_max_slider.setValue(_max);
 				}
 			}
 		});
@@ -58,8 +62,8 @@ public class ToolRangeSelector extends JPanel {
 		// range_max needs to be calculated from the bits_stored value
 		// in the current dicom series
 		int range_max = 100;
-		_min = 50;
-		_max = 50;
+		_min = (int) (_seg.get_min() / 40.95 + 1);
+		_max = (int) (_seg.get_max() / 40.95 + 1);
 
 		_min_label = new JLabel("Min:");
 		_max_label = new JLabel("Max:");
@@ -71,6 +75,7 @@ public class ToolRangeSelector extends JPanel {
 				if (source.getValueIsAdjusting()) {
 					_min = (int) source.getValue();
 					_seg.create_range_seg((int) (_min * 40.95), (int) (_max * 40.95), slices);
+					v2d.update_view();
 					System.out.println("_min_slider stateChanged: " + _min);
 				}
 			}
@@ -83,6 +88,7 @@ public class ToolRangeSelector extends JPanel {
 				if (source.getValueIsAdjusting()) {
 					_max = (int) source.getValue();
 					_seg.create_range_seg((int) (_min * 40.95), (int) (_max * 40.95), slices);
+					v2d.update_view();
 					System.out.println("_max_slider stateChanged: " + _max);
 				}
 			}
