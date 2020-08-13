@@ -11,3 +11,6 @@
 *.rar
 
 .DS_Store
+.vscode/lab_med.code-workspace
+.vscode/launch.json
+.classpath
