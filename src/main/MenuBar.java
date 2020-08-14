@@ -141,16 +141,24 @@ public class MenuBar extends JMenuBar {
 		_menuTools.add(_tools_show_seg);
 
 		// -------------------------------------------------------------------------------------
+
 		item = new JMenuItem(new String("Show Setting Tool"));
 		item.addActionListener(windowSettingListener);
 		_menuWinSet.add(item);
+
 		// -------------------------------------------------------------------------------------
 
+		item = new JMenuItem(new String("Show Region Grow"));
+		item.addActionListener(RG_SegmentListener);
+		_menuRGSeg.add(item);
+
+		// -------------------------------------------------------------------------------------
 		add(_menuFile);
 		add(_menu2d);
 		add(_menu3d);
 		add(_menuTools);
 		add(_menuWinSet);
+		add(_menuRGSeg);
 	}
 
 	/**
@@ -351,7 +359,28 @@ public class MenuBar extends JMenuBar {
 
 	ActionListener windowSettingListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
-			_tools.showTool(new ToolWindowSelector(_v2d));
+			ImageStack is = LabMed.get_is();
+			if (is.getNumberOfImages() == 0) {
+				JOptionPane.showMessageDialog(_win, "WindowSelector ohne geöffneten DICOM Datensatz nicht möglich.",
+						"Inane error", JOptionPane.ERROR_MESSAGE);
+			} else {
+				_tools.showTool(new ToolWindowSelector(_v2d));
+			}
+		}
+	};
+
+	ActionListener RG_SegmentListener = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			ImageStack is = LabMed.get_is();
+			// if (is.getNumberOfImages() == 0) {
+			// JOptionPane.showMessageDialog(_win, "Segmentierung ohne geöffneten DICOM
+			// Datensatz nicht möglich.",
+			// "Inane error", JOptionPane.ERROR_MESSAGE);
+			// } else
+
+			Segment seg = is.createSegment("Region Grow Segment");
+			_v2d.toggleSeg(seg);
+			_tools.showTool(new ToolRGSelector(_v2d, seg));
 		}
 	};
 }

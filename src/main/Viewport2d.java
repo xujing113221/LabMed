@@ -18,6 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.vecmath.Point3i;
 
 import misc.DiFile;
 import misc.MyObservable;
@@ -36,6 +37,12 @@ public class Viewport2d extends Viewport implements MyObserver {
 
 	private int _window_width;
 	private int _window_center;
+
+	public float RG_Varianz;
+	public Point3i RG_Seed;
+
+	// private float _rg_varianz;
+	// private Point3i _rg_seed;
 
 	// each segmentation image needs the same, those are stored in a hashtable
 	// and referenced by the segmentation name
@@ -70,7 +77,19 @@ public class Viewport2d extends Viewport implements MyObserver {
 		}
 
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-			System.out.println("Panel2d::mouseClicked: x=" + e.getX() + " y=" + e.getY());
+
+			String name = new String("Region Grow Segment");
+
+			if (_map_name_to_seg.get(name) != null) {
+				Segment rg_seg = _map_name_to_seg.get(name);
+				int z = _slices.getActiveImageID(); // Z 有待考量
+				int y = (int) ((float) e.getX() / (float) DEF_WIDTH * (float) _slices.getImageWidth());
+				int x = (int) ((float) e.getY() / (float) DEF_HEIGHT * (float) _slices.getImageHeight());
+				RG_Seed = new Point3i(x, y, z);
+				rg_seg.create_region_grow_seg(RG_Seed, RG_Varianz, _slices);
+				update_view();
+				System.out.println(RG_Seed);
+			}
 		}
 
 		public void mousePressed(java.awt.event.MouseEvent e) {
@@ -155,6 +174,9 @@ public class Viewport2d extends Viewport implements MyObserver {
 		_window_center = (int) (50 * 40.95);
 		_window_width = (int) (50 * 40.95);
 
+		RG_Seed = new Point3i(100, 100, 50);
+		RG_Varianz = 0.1f;
+
 		// create an empty 10x10 image as default
 		_bg_img = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
 		final int[] bg_pixels = ((DataBufferInt) _bg_img.getRaster().getDataBuffer()).getData();
@@ -189,7 +211,7 @@ public class Viewport2d extends Viewport implements MyObserver {
 		// create image for segment layers
 		for (String seg_name : _map_name_to_seg.keySet()) {
 			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
-
+			/* TODO 去掉rg分割的名字 */
 			_map_seg_name_to_img.put(seg_name, seg_img);
 		}
 	}
@@ -206,6 +228,7 @@ public class Viewport2d extends Viewport implements MyObserver {
 			return;
 		}
 
+		// _w and _h need to be initialized BEFORE filling the image array !
 		if (_view_mode == 0) {
 			_w = _slices.getImageWidth();
 			_h = _slices.getImageHeight();
@@ -217,7 +240,6 @@ public class Viewport2d extends Viewport implements MyObserver {
 			_h = _slices.getNumberOfImages();
 		}
 
-		// _w and _h need to be initialized BEFORE filling the image array !
 		if (_bg_img == null || _bg_img.getWidth(null) != _w || _bg_img.getHeight(null) != _h) {
 			reallocate();
 		}
@@ -246,17 +268,7 @@ public class Viewport2d extends Viewport implements MyObserver {
 			}
 		}
 
-		/*
-		 * // rendering the segmentations. each segmentation is rendered in a different
-		 * image. for (String seg_name : _map_name_to_seg.keySet()) { // here should be
-		 * the code for displaying the segmentation data // (exercise 3)
-		 * 
-		 * BufferedImage seg_img = _map_seg_name_to_img.get(seg_name); int[] seg_pixels
-		 * = ((DataBufferInt)seg_img.getRaster().getDataBuffer()).getData();
-		 * 
-		 * // to drawn a segmentation image, fill the pixel array seg_pixels // with
-		 * ARGB values similar to exercise 2 }
-		 */
+		/* update segment */
 		for (String seg_name : _map_name_to_seg.keySet()) {
 			BufferedImage seg_img = _map_seg_name_to_img.get(seg_name);
 			int[] seg_pixels = ((DataBufferInt) seg_img.getRaster().getDataBuffer()).getData();
@@ -296,20 +308,28 @@ public class Viewport2d extends Viewport implements MyObserver {
 		// + _window_center);
 	}
 
+	/**
+	 * get the value in postion(x,y,z) of the Image stack
+	 * 
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return 0-255 value
+	 */
 	private int getPixelValueFromSlices(int x, int y, int z) {
-		int value = -1;
-		int slices_w = _slices.getImageWidth();
-		// int slices_h = _slices.getImageHeight();
-		// int slices_s = _slices.getNumberOfImages();
-
 		byte[] pixels = _slices.getDiFile(z).getElement(0x7FE00010).getValues();
-		int bit_off = _slices.getDiFile(z).getBitsAllocated() - _slices.getDiFile(z).getBitsStored();
-		int index = (y * slices_w + x) * 2;
-		value = (pixels[index + 1] & 0xff) << 8 | (pixels[index] & 0xff);
+		int index = (y * _slices.getImageWidth() + x) * 2;
+		int value = (pixels[index + 1] & 0xff) << 8 | (pixels[index] & 0xff);
 
 		return pixelToValue256(value);
 	}
 
+	/**
+	 * convert pixel to 0-255 using window
+	 * 
+	 * @param pixel
+	 * @return 0-255 value
+	 */
 	private int pixelToValue256(int pixel) {
 		int value = 0;
 		int max = _window_center + _window_width + 1;

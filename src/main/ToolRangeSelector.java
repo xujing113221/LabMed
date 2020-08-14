@@ -76,7 +76,7 @@ public class ToolRangeSelector extends JPanel {
 					_min = (int) source.getValue();
 					_seg.create_range_seg((int) (_min * 40.95), (int) (_max * 40.95), slices);
 					v2d.update_view();
-					System.out.println("_min_slider stateChanged: " + _min);
+					// System.out.println("_min_slider stateChanged: " + _min);
 				}
 			}
 		});
@@ -89,7 +89,7 @@ public class ToolRangeSelector extends JPanel {
 					_max = (int) source.getValue();
 					_seg.create_range_seg((int) (_min * 40.95), (int) (_max * 40.95), slices);
 					v2d.update_view();
-					System.out.println("_max_slider stateChanged: " + _max);
+					// System.out.println("_max_slider stateChanged: " + _max);
 				}
 			}
 		});

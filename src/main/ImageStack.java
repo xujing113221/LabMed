@@ -167,6 +167,7 @@ public class ImageStack extends MyObservable {
 
 		if (_segment_map.containsKey(name)) {
 			seg = null;
+			seg = _segment_map.get(name);
 		} else {
 			int[] def_colors = { 0xff0000, 0x00ff00, 0x0000ff };
 			seg = new Segment(name, _w, _h, _dicom_files.length);
