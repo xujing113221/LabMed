@@ -1,11 +1,7 @@
 package main;
 
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import javax.swing.DefaultListModel;
 import javax.vecmath.Point3i;
 
 import misc.BitMask;
@@ -45,10 +41,6 @@ public class Segment {
 
 		_max = 4000; // min-max segment
 		_min = 100;
-
-		// _rg_varianz = 0.1f; // region grow segment
-		// _rg_seed = new Point3i(0, 0, 0);
-		// RG_SEG_NAME = new String("Region Grow Segment");
 
 		_color = 0xff00ff;
 		_layers = new BitMask[layer_num];
@@ -90,11 +82,13 @@ public class Segment {
 	}
 
 	/**
+	 * create region grow segment: i(p) ∈ [i(s) − v ∗ i(s), i(s) + v ∗ i(s)]
 	 * 
-	 * @param seed
-	 * @param var
+	 * @param seed: start point.
+	 * @param var:  Varianz
 	 */
 	public void create_region_grow_seg(Point3i seed, float var, ImageStack slices) {
+
 		Queue<Point3i> voxelQ = new LinkedList<Point3i>();
 		final int DateLength = slices.getImageWidth() * slices.getImageHeight() * slices.getNumberOfImages();
 		final Point3i[] n6 = { new Point3i(1, 0, 0), new Point3i(-1, 0, 0), new Point3i(0, 1, 0), new Point3i(0, -1, 0),
@@ -105,7 +99,6 @@ public class Segment {
 			_layers[i].clear();
 
 		voxelQ.add(seed); // start from seed.
-
 		while (!voxelQ.isEmpty()) {
 			Point3i p = voxelQ.poll();
 
@@ -151,8 +144,6 @@ public class Segment {
 		int w = _w;
 		int h = _h;
 		int n = _layers.length;
-
-		// TODO: 判断是否要 >=
 
 		if (voxel.x >= w || voxel.x < 0)
 			return false;

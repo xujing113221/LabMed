@@ -372,15 +372,29 @@ public class MenuBar extends JMenuBar {
 	ActionListener RG_SegmentListener = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
 			ImageStack is = LabMed.get_is();
-			// if (is.getNumberOfImages() == 0) {
-			// JOptionPane.showMessageDialog(_win, "Segmentierung ohne geöffneten DICOM
-			// Datensatz nicht möglich.",
-			// "Inane error", JOptionPane.ERROR_MESSAGE);
-			// } else
+			if (is.getNumberOfImages() == 0) {
+				JOptionPane.showMessageDialog(_win, "Segmentierung ohne geöffneten DICOM Datensatz nicht möglich.",
+						"Inane error", JOptionPane.ERROR_MESSAGE);
+			} else {
+				String rg_name = new String("Region Grow Segment");
+				Segment seg;
 
-			Segment seg = is.createSegment("Region Grow Segment");
-			_v2d.toggleSeg(seg);
-			_tools.showTool(new ToolRGSelector(_v2d, seg));
+				if (!is.getSegNames().contains(rg_name)) {
+					seg = is.createSegment(rg_name);
+					_no_entries2d.setVisible(false);
+					_no_entries3d.setVisible(false);
+					JMenuItem item = new JCheckBoxMenuItem(rg_name, true);
+					item.addActionListener(toggleSegListener2d);
+					_menu2d.add(item);
+					item = new JCheckBoxMenuItem(rg_name, false);
+					item.addActionListener(toggleSegListener3d);
+					_menu3d.add(item);
+					_v2d.toggleSeg(seg);
+				} else
+					seg = is.getSegment(rg_name);
+				_tools.showTool(new ToolRGSelector(_v2d, seg));
+			}
+
 		}
 	};
 }

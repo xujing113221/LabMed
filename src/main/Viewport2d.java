@@ -82,13 +82,26 @@ public class Viewport2d extends Viewport implements MyObserver {
 
 			if (_map_name_to_seg.get(name) != null) {
 				Segment rg_seg = _map_name_to_seg.get(name);
-				int z = _slices.getActiveImageID(); // Z 有待考量
-				int y = (int) ((float) e.getX() / (float) DEF_WIDTH * (float) _slices.getImageWidth());
-				int x = (int) ((float) e.getY() / (float) DEF_HEIGHT * (float) _slices.getImageHeight());
+				int x = 0, y = 0, z = 0;
+
+				if (_view_mode == 0) {
+					y = (int) ((float) e.getX() / (float) getWidth() * (float) (_slices.getImageWidth() - 1));
+					x = (int) ((float) e.getY() / (float) getHeight() * (float) (_slices.getImageHeight() - 1));
+					z = _slices.getActiveImageID();
+				} else if (_view_mode == 1) {
+					z = (int) ((float) e.getY() / (float) getHeight() * (float) (_slices.getNumberOfImages() - 1));
+					y = (int) ((float) e.getX() / (float) getWidth() * (float) (_slices.getImageHeight() - 1));
+					x = _slices.getActiveImageID();
+				} else if (_view_mode == 2) {
+					z = (int) ((float) e.getY() / (float) getHeight() * (float) (_slices.getNumberOfImages() - 1));
+					x = (int) ((float) e.getX() / (float) getWidth() * (float) (_slices.getImageHeight() - 1));
+					y = _slices.getActiveImageID();
+				}
+
 				RG_Seed = new Point3i(x, y, z);
+				ToolRGSelector.writeSeedPos(RG_Seed);
 				rg_seg.create_region_grow_seg(RG_Seed, RG_Varianz, _slices);
 				update_view();
-				System.out.println(RG_Seed);
 			}
 		}
 
@@ -175,7 +188,7 @@ public class Viewport2d extends Viewport implements MyObserver {
 		_window_width = (int) (50 * 40.95);
 
 		RG_Seed = new Point3i(100, 100, 50);
-		RG_Varianz = 0.1f;
+		RG_Varianz = 0.02f;
 
 		// create an empty 10x10 image as default
 		_bg_img = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
@@ -211,7 +224,6 @@ public class Viewport2d extends Viewport implements MyObserver {
 		// create image for segment layers
 		for (String seg_name : _map_name_to_seg.keySet()) {
 			BufferedImage seg_img = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_ARGB);
-			/* TODO 去掉rg分割的名字 */
 			_map_seg_name_to_img.put(seg_name, seg_img);
 		}
 	}

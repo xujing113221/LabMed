@@ -11,30 +11,29 @@ public class ToolRGSelector extends JPanel {
     private static final long serialVersionUID = 1L;
     private Segment _rg_seg;
     private JSlider _varianz_slider;
-    private JLabel _varianz_label, _seed_label, _postion_abel;
+    private JLabel _varianz_label, _seed_label;
+    private static JLabel _postion_label = null;
 
     public ToolRGSelector(Viewport2d v2d, Segment seg) {
 
         JLabel win_set_tilte = new JLabel("Region Grow Selector");
         final ImageStack slices = ImageStack.getInstance();
 
-        // final String RG_SEG_NAME = new String("Region Grow Segment");
-
         _rg_seg = seg;
 
-        int range_max = 100;
+        int range_max = 500;
 
-        _varianz_label = new JLabel("Varianz: " + String.format("%.2f", v2d.RG_Varianz));
+        _varianz_label = new JLabel("Varianz: " + String.format("%.3f", v2d.RG_Varianz));
         _seed_label = new JLabel("Seed:");
-        _postion_abel = new JLabel("(xx,yy,zz)");
+        _postion_label = new JLabel(v2d.RG_Seed.toString());
 
-        _varianz_slider = new JSlider(0, range_max, (int) (v2d.RG_Varianz * 100));
+        _varianz_slider = new JSlider(0, range_max, (int) (v2d.RG_Varianz * range_max));
         _varianz_slider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
                     float varianz = (float) source.getValue() / (float) range_max;
-                    _varianz_label.setText("Varianz: " + String.format("%.2f", varianz));
+                    _varianz_label.setText("Varianz: " + String.format("%.3f", varianz));
                     v2d.RG_Varianz = varianz;
 
                     _rg_seg.create_region_grow_seg(v2d.RG_Seed, varianz, slices);
@@ -68,11 +67,16 @@ public class ToolRGSelector extends JPanel {
         c.weightx = 0.99;
         c.gridx = 1;
         c.gridy = 1;
-        this.add(_postion_abel, c);
+        this.add(_postion_label, c);
 
         c.gridx = 1;
         c.gridy = 2;
         this.add(_varianz_slider, c);
-
     }
+
+    public static void writeSeedPos(Point3i seed) {
+        if (_postion_label != null)
+            _postion_label.setText(seed.toString());
+    }
+
 }

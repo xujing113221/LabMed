@@ -1,7 +1,5 @@
 package misc;
 
-import java.io.IOException;
-
 /**
  * Implements the internal representation of a DICOM Data Element.
  * 
