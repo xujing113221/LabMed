@@ -2,7 +2,7 @@
 *.log
 *.ctxt
 .mtj.tmp/
-*.jar
+# *.jar
 *.war
 *.nar
 *.ear
