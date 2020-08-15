@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.border.LineBorder;
 
 /**
@@ -13,7 +14,7 @@ import javax.swing.border.LineBorder;
  */
 public class ToolPane extends JPanel {
 	private static final long serialVersionUID = 1L;
-	private JPanel _active_panel;
+	private JTabbedPane _tabbedPane;
 
 	/**
 	 * Default Constructor. Creates an empty ToolPane with no active panel.
@@ -22,8 +23,10 @@ public class ToolPane extends JPanel {
 	public ToolPane() {
 		this.setPreferredSize(new Dimension(800, 200));
 		setBorder(new LineBorder(Color.black, 1));
-		_active_panel = null;
 		setLayout(new BorderLayout(0, 0));
+		_tabbedPane = new JTabbedPane();
+		this.add(_tabbedPane, BorderLayout.CENTER);
+		this.validate();
 	}
 
 	/**
@@ -31,15 +34,15 @@ public class ToolPane extends JPanel {
 	 * 
 	 * @param panel the new panel to show
 	 */
-	public void showTool(JPanel panel) {
-		if (_active_panel != null) {
-			this.remove(_active_panel);
+	public void showTool(String tabname, JPanel panel) {
+		int index = _tabbedPane.indexOfTab(tabname);
+		if (index == -1) {
+			_tabbedPane.addTab(tabname, panel);
+			_tabbedPane.setSelectedComponent(panel);
+		} else {
+			_tabbedPane.setSelectedIndex(index);
 		}
 
-		this.add(panel, BorderLayout.CENTER);
-		_active_panel = panel;
-		this.validate();
 		this.repaint();
 	}
-
 }

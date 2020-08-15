@@ -342,7 +342,7 @@ public class MenuBar extends JMenuBar {
 					item.addActionListener(toggleSegListener3d);
 					_menu3d.add(item);
 					// _tools.showTool(new ToolRangeSelector(seg));
-					_tools.showTool(new ToolRangeSelector(_v2d, seg));
+					_tools.showTool("Segments", new ToolRangeSelector(_v2d, seg));
 					_tools_show_seg.setEnabled(true);
 				}
 			}
@@ -353,7 +353,7 @@ public class MenuBar extends JMenuBar {
 		public void actionPerformed(ActionEvent event) {
 			String seg_name = _v2d._slices.getSegNames().getElementAt(0);
 			Segment seg = _v2d._slices.getSegment(seg_name);
-			_tools.showTool(new ToolRangeSelector(_v2d, seg));
+			_tools.showTool("Segments", new ToolRangeSelector(_v2d, seg));
 		}
 	};
 
@@ -364,7 +364,7 @@ public class MenuBar extends JMenuBar {
 				JOptionPane.showMessageDialog(_win, "WindowSelector ohne geöffneten DICOM Datensatz nicht möglich.",
 						"Inane error", JOptionPane.ERROR_MESSAGE);
 			} else {
-				_tools.showTool(new ToolWindowSelector(_v2d));
+				_tools.showTool("Windows Setting", new ToolWindowSelector(_v2d));
 			}
 		}
 	};
@@ -392,7 +392,7 @@ public class MenuBar extends JMenuBar {
 					_v2d.toggleSeg(seg);
 				} else
 					seg = is.getSegment(rg_name);
-				_tools.showTool(new ToolRGSelector(_v2d, seg));
+				_tools.showTool("RG-Seg-Setting", new ToolRGSelector(_v2d, seg));
 			}
 
 		}
