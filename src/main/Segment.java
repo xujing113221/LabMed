@@ -20,6 +20,7 @@ public class Segment {
 	private int _h; // Bitmask height
 	private int _max; // min-max segment:max
 	private int _min; // min-max segment:min
+	private int _segPoints;
 	// private float _rg_varianz; // region grow segment: varianz
 	// private Point3i _rg_seed; // region grow segment: seed
 	// public final String RG_SEG_NAME; // region grow segment: segment name
@@ -38,6 +39,7 @@ public class Segment {
 		this._name = name;
 		this._w = w;
 		this._h = h;
+		this._segPoints = 0;
 
 		_max = 4000; // min-max segment
 		_min = 100;
@@ -64,6 +66,8 @@ public class Segment {
 		_max = max;
 		_min = min;
 
+		_segPoints = 0;
+
 		// clean segment mask
 		for (int i = 0; i < _layers.length; i++)
 			_layers[i].clear();
@@ -75,8 +79,10 @@ public class Segment {
 				for (int x = 0; x < _w; x++) {
 					int index = (y * _w + x) * 2;
 					int value = (pixels[index + 1] & 0xff) << 8 | (pixels[index] & 0xff);
-					if (value >= min && value <= max)
+					if (value >= min && value <= max) {
 						_layers[i].set(x, y, true);
+						_segPoints++; // record the num of the mask
+					}
 				}
 		}
 	}
@@ -94,6 +100,8 @@ public class Segment {
 		final Point3i[] n6 = { new Point3i(1, 0, 0), new Point3i(-1, 0, 0), new Point3i(0, 1, 0), new Point3i(0, -1, 0),
 				new Point3i(0, 0, 1), new Point3i(0, 0, -1) };
 
+		_segPoints = 0;
+
 		// clean segment mask
 		for (int i = 0; i < _layers.length; i++)
 			_layers[i].clear();
@@ -109,6 +117,7 @@ public class Segment {
 				break;
 
 			_layers[p.z].set(p.x, p.y, true); // mark the voxel, create segment.
+			_segPoints++;
 			int p_value = getPixelValueFormSlices(p, slices);
 			for (int i = 0; i < n6.length; i++) {
 				Point3i np = new Point3i(p.x + n6[i].x, p.y + n6[i].y, p.z + n6[i].z);
@@ -153,6 +162,10 @@ public class Segment {
 			return false;
 
 		return true;
+	}
+
+	public int getSegPointsCnt() {
+		return _segPoints;
 	}
 
 	/**

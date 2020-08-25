@@ -159,6 +159,9 @@ public class MenuBar extends JMenuBar {
 		add(_menuTools);
 		add(_menuWinSet);
 		add(_menuRGSeg);
+
+		// -------------------------------------------------------------------------------------
+		_tools.showTool("3D Setting", new Tool3dSetting(_v3d));
 	}
 
 	/**

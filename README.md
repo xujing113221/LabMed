@@ -45,3 +45,11 @@ NoSuchElementException异常
 6–>peek 返回队列头部的元素， 如果队列为空，则返回null
 7–>put 添加一个元素，如果队列满，则阻塞 
 8–>take 移除并返回队列头部的元素，如果队列为空，则阻塞
+
+
+## 参考文章
+
++ [Java3D读取3DMax模型并实现鼠标拖拽、旋转、滚轮缩放等功能](https://www.cnblogs.com/herd/p/6767006.html)
++ [Java3D实例应用-载入3ds 模型](https://www.cnblogs.com/dennisit/archive/2013/05/07/3065479.html)
++ [Java3D应用实例-创建空间几何模型](https://www.cnblogs.com/dennisit/archive/2013/05/06/3063042.html)
++ 
