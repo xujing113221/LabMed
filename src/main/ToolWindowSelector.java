@@ -12,7 +12,7 @@ public class ToolWindowSelector extends JPanel {
     private JSlider _width_slider, _center_slider;
     private JLabel _width_label, _center_label;
 
-    public ToolWindowSelector(Viewport2d v2d) {
+    public ToolWindowSelector(Viewport2d v2d, Viewport3d v3d) {
         JLabel win_set_tilte = new JLabel("Window Range Selector");
 
         int range_max = 100;
@@ -30,6 +30,7 @@ public class ToolWindowSelector extends JPanel {
                     _width = (int) source.getValue();
                     _width_label.setText("Width:" + _width);
                     v2d.setWindowWidth((int) (_width * 40.95));
+                    v3d.setWindowWidth((int) (_width * 40.95));
                     v2d.update_view();
                     // System.out.println("_width_slider stateChanged: " + _width);
                 }
@@ -44,6 +45,7 @@ public class ToolWindowSelector extends JPanel {
                     _center = (int) source.getValue();
                     _center_label.setText("Center:" + _center);
                     v2d.setWindowCenter((int) (_center * 40.95));
+                    v3d.setWindowCenter((int) (_center * 40.95));
                     v2d.update_view();
                     // System.out.println("_center_slider stateChanged: " + _center);
                 }

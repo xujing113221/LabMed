@@ -123,6 +123,10 @@ public class MenuBar extends JMenuBar {
 		item.addActionListener(toggleBGListener3d);
 		_menu3d.add(item);
 
+		item = new JCheckBoxMenuItem(new String("Show Ortho Slice"), false);
+		item.addActionListener(toggleOrthoSliceListener3d);
+		_menu3d.add(item);
+
 		_menu3d.addSeparator();
 
 		_no_entries3d = new JMenuItem(new String("no segmentations yet"));
@@ -272,10 +276,13 @@ public class MenuBar extends JMenuBar {
 			String name = event.getActionCommand();
 			if (name.equals("Transversal")) {
 				_v2d.setViewMode(0);
+				_v3d.setViewMode(0);
 			} else if (name.equals("Sagittal")) {
 				_v2d.setViewMode(1);
+				_v3d.setViewMode(1);
 			} else if (name.equals("Frontal")) {
 				_v2d.setViewMode(2);
+				_v3d.setViewMode(2);
 			}
 		}
 	};
@@ -294,7 +301,17 @@ public class MenuBar extends JMenuBar {
 	 */
 	ActionListener toggleBGListener3d = new ActionListener() {
 		public void actionPerformed(ActionEvent event) {
-			_v3d.toggleBG();
+			// _v3d.toggleBG();
+			_v3d.toggleShowOriginalData();
+			_v3d.update_view();
+		}
+	};
+
+	ActionListener toggleOrthoSliceListener3d = new ActionListener() {
+		public void actionPerformed(ActionEvent event) {
+			// _v3d.toggleBG();
+			_v3d.toggleOrthoSlice();
+			_v3d.update_view();
 		}
 	};
 
@@ -367,7 +384,7 @@ public class MenuBar extends JMenuBar {
 				JOptionPane.showMessageDialog(_win, "WindowSelector ohne geöffneten DICOM Datensatz nicht möglich.",
 						"Inane error", JOptionPane.ERROR_MESSAGE);
 			} else {
-				_tools.showTool("Windows Setting", new ToolWindowSelector(_v2d));
+				_tools.showTool("Windows Setting", new ToolWindowSelector(_v2d, _v3d));
 			}
 		}
 	};
