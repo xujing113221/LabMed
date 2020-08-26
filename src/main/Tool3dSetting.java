@@ -5,12 +5,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.*;
 import javax.swing.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Tool3dSetting extends JPanel {
     private static final long serialVersionUID = 1L;
     // private Segment _rg_seg;
     private JSlider _distance_slider;
     private JLabel _distance_label;
+    private JButton _update_Btn;
     // private static JLabel _postion_label = null;
 
     public Tool3dSetting(Viewport3d v3d) {
@@ -33,6 +36,13 @@ public class Tool3dSetting extends JPanel {
             }
         });
 
+        _update_Btn = new JButton("Update");
+        _update_Btn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                v3d.update_view();
+            }
+        });
+
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.weighty = 0.3;
@@ -43,6 +53,11 @@ public class Tool3dSetting extends JPanel {
         c.gridx = 0;
         c.gridy = 0;
         this.add(win_set_tilte, c);
+
+        c.gridwidth = 2;
+        c.gridx = 1;
+        c.gridy = 0;
+        this.add(_update_Btn, c);
 
         c.gridwidth = 1;
         c.weightx = 0.01;

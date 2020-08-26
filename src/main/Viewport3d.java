@@ -80,7 +80,7 @@ public class Viewport3d extends Viewport implements MyObserver {
 			objTrans.addChild(draw_cube(_distance));
 			if (_slices.getNumberOfImages() != 0) {
 				if (_show_original_data) {
-					float transparency = 0.0f;
+					float transparency = 0.1f;
 					for (int i = 0; i < _slices.getNumberOfImages(); i++)
 						objTrans.addChild(create_texture(0, i, _distance, transparency));
 					for (int i = 0; i < _slices.getImageHeight(); i++)
