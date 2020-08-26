@@ -12,6 +12,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.jogamp.opengl.Threading.Mode;
+import com.sun.j3d.utils.behaviors.mouse.MouseBehaviorCallback;
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseTranslate;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
@@ -75,7 +76,7 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// trans3d.setScale(new Vector3d(1.0d, 1.0d, (256.0d / 113.d)));
 			TransformGroup objTrans = new TransformGroup(trans3d);
 			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-
+			// TODO: 是不是需要编译complies
 			objTrans.addChild(draw_cube(_distance));
 			if (_slices.getNumberOfImages() != 0) {
 				if (_show_original_data) {
@@ -103,7 +104,7 @@ public class Viewport3d extends Viewport implements MyObserver {
 
 			_scene.addChild(objTrans);
 
-			BoundingSphere bound = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);
+			BoundingSphere bound = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), Double.MAX_VALUE);
 			// 添加通过鼠标左键控制3D物体旋转的对象
 			MouseRotate mrotate = new MouseRotate();
 			mrotate.setTransformGroup(objTrans);
@@ -120,6 +121,30 @@ public class Viewport3d extends Viewport implements MyObserver {
 			objTrans.addChild(mzoom);
 			mzoom.setSchedulingBounds(bound);
 
+			// mzoom.setupCallback(new MouseBehaviorCallback() {
+			// public void transformChanged(int arg0, Transform3D tf) {
+			// double fx = mzoom.getFactor();
+			// System.out.println("zoom factor: " + arg0);
+			// }
+			// });
+
+			// mrotate.setupCallback(new MouseBehaviorCallback() {
+			// public void transformChanged(int arg0, Transform3D tf) {
+			// double fx = mrotate.getXFactor();
+			// double fy = mrotate.getYFactor();
+			// System.out.println("rotate factor: " + fx + " + " + fy);
+			// }
+			// });
+
+			// // 设置光源
+			// Color3f lightColor = new Color3f(1.0f, 1.0f, 1.0f);
+			// Vector3f lightDirection = new Vector3f(4.0f, -7.0f, -12.0f);
+			// // 设置定向光的颜色和影响范围
+			// DirectionalLight light = new DirectionalLight(lightColor, lightDirection);
+			// light.setInfluencingBounds(bound);
+			// // 将光源添加到场景
+			// _scene.addChild(light);
+			// objTrans.compile();
 			_scene.compile();
 			_simple_u.addBranchGraph(_scene);
 			// 设置背景
@@ -127,15 +152,6 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// Background bg = new Background(bgColor);
 			// bg.setApplicationBounds(bound);
 			// _scene.addChild(bg);
-
-			// 设置光源
-			// Color3f lightColor = new Color3f(1.0f, 1.0f, 0.9f);
-			// Vector3f lightDirection = new Vector3f(4.0f, -7.0f, -12.0f);
-			// // 设置定向光的颜色和影响范围
-			// DirectionalLight light = new DirectionalLight(lightColor, lightDirection);
-			// light.setInfluencingBounds(bound);
-			// // 将光源添加到场景
-			// _scene.addChild(light);
 
 			// 添加模型
 			// objTrans.addChild(new ColorCube(0.5f));
@@ -186,21 +202,21 @@ public class Viewport3d extends Viewport implements MyObserver {
 
 		Point3d a = null, b = null, c = null, d = null;
 		if (view_mode == 0) {
-			double pos = (double) (active - s / 2) * distance * w / s;
+			double pos = (double) (active - s / 2 + 1) * distance * w / s;
 			double x = (double) w / 2 * distance;
 			a = new Point3d(-x, x, pos);
 			b = new Point3d(x, x, pos);
 			c = new Point3d(x, -x, pos);
 			d = new Point3d(-x, -x, pos);
 		} else if (view_mode == 1) {
-			double pos = (double) (active - w / 2) * distance;
+			double pos = (double) (active - w / 2 + 1) * distance;
 			double x = (double) w / 2 * distance;
 			a = new Point3d(-x, pos, x);
 			b = new Point3d(x, pos, x);
 			c = new Point3d(x, pos, -x);
 			d = new Point3d(-x, pos, -x);
 		} else {
-			double pos = (double) (active - h / 2) * distance;
+			double pos = (double) (active - h / 2 + 1) * distance;
 			double x = (double) h / 2 * distance;
 			a = new Point3d(pos, -x, x);
 			b = new Point3d(pos, x, x);
@@ -268,13 +284,8 @@ public class Viewport3d extends Viewport implements MyObserver {
 				else
 					value = getPixelValueFromSlices(x, z, y);
 				int rgba = (int) ((float) value * 1.0f);
-				// bg_img.setRGB(x, y, (value << 16) | (value << 8) | (value << 0));
-				if (rgba > 1)
-					// bg_img.setRGB(x, y, 0xff000000 | (rgba << 8));
-					bg_img.setRGB(x, y, 0xff000000 | (rgba << 16) | (rgba << 8) | rgba);
-				// bg_img.setRGB(x, y, (value | (0xff000000)));
-				// bg_img.setRGB(x, y, (value << 24));
 
+				bg_img.setRGB(x, y, (rgba << 24) | (rgba << 16) | (rgba << 8) | rgba);
 			}
 
 		return bg_img;
@@ -441,13 +452,14 @@ public class Viewport3d extends Viewport implements MyObserver {
 			}
 		}
 
-		if (msg._type == Message.M_NEW_IMAGE_LOADED) {
-			update_view();
-		}
+		// if (msg._type == Message.M_NEW_IMAGE_LOADED) {
+		// update_view();
+		// }
 
 		if (msg._type == Message.M_NEW_ACTIVE_IMAGE) {
 			_slices_pos[_v2d_view_mode] = _slices.getActiveImageID();
-			update_view();
+			if (_ortho_slice)
+				update_view();
 		}
 
 		// if (msg._type == Message.M_SEG_CHANGED) {

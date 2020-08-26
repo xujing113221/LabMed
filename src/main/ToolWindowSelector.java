@@ -32,6 +32,7 @@ public class ToolWindowSelector extends JPanel {
                     v2d.setWindowWidth((int) (_width * 40.95));
                     v3d.setWindowWidth((int) (_width * 40.95));
                     v2d.update_view();
+                    v3d.update_view();
                     // System.out.println("_width_slider stateChanged: " + _width);
                 }
             }
@@ -47,6 +48,7 @@ public class ToolWindowSelector extends JPanel {
                     v2d.setWindowCenter((int) (_center * 40.95));
                     v3d.setWindowCenter((int) (_center * 40.95));
                     v2d.update_view();
+                    v3d.update_view();
                     // System.out.println("_center_slider stateChanged: " + _center);
                 }
             }
