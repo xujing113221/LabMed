@@ -8,6 +8,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.image.BufferedImage;
 
 import javax.media.j3d.*;
+import com.sun.j3d.utils.geometry.Sphere;
 
 import javax.vecmath.*;
 import com.sun.j3d.utils.universe.SimpleUniverse;
@@ -36,6 +37,7 @@ public class Viewport3d extends Viewport implements MyObserver {
 	private int[] _slices_pos = { 50, 128, 128 };
 	private int _v2d_view_mode = 0;
 	private boolean _show_original_data = false;
+	private MarchingCube _mc = new MarchingCube();
 
 	/**
 	 * Private class, implementing the GUI element for displaying the 3d data.
@@ -75,9 +77,10 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// trans3d.setScale(new Vector3d(1.0d, 1.0d, (256.0d / 113.d)));
 			TransformGroup objTrans = new TransformGroup(trans3d);
 			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-			// objTrans.addChild(draw_cube(_distance));
-			objTrans.addChild(MCCube());
-			objTrans.addChild(create_MarchingCube(MarchingCube.CASE_14));
+			objTrans.addChild(draw_cube(_distance));
+			// objTrans.addChild(MCCube());
+			// objTrans.addChild(create_MarchingCube(MarchingCube.CASE_14));
+
 			if (_slices.getNumberOfImages() != 0) {
 				if (_show_original_data) {
 					float transparency = 0.1f;
@@ -98,10 +101,12 @@ public class Viewport3d extends Viewport implements MyObserver {
 			if (!_map_name_to_seg.isEmpty()) {
 				for (String seg_name : _map_name_to_seg.keySet()) {
 					Segment seg = _slices.getSegment(seg_name);
-					objTrans.addChild(create_pointcloud(seg, _distance));
+					// objTrans.addChild(create_pointcloud(seg, _distance));
+					create_MarchingCube(objTrans, seg, 3, _distance);
 				}
 			}
 
+			// objTrans.addChild(new Sphere(128 * _distance));
 			_scene.addChild(objTrans);
 
 			BoundingSphere bound = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), Double.MAX_VALUE);
@@ -136,14 +141,14 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// }
 			// });
 
-			// // 设置光源
-			// Color3f lightColor = new Color3f(1.0f, 1.0f, 1.0f);
-			// Vector3f lightDirection = new Vector3f(4.0f, -7.0f, -12.0f);
-			// // 设置定向光的颜色和影响范围
-			// DirectionalLight light = new DirectionalLight(lightColor, lightDirection);
-			// light.setInfluencingBounds(bound);
-			// // 将光源添加到场景
-			// _scene.addChild(light);
+			// 设置光源
+			Color3f lightColor = new Color3f(0.0f, 0.0f, 1.0f);
+			Vector3f lightDirection = new Vector3f(4.0f, -7.0f, -12.0f);
+			// 设置定向光的颜色和影响范围
+			DirectionalLight light = new DirectionalLight(lightColor, lightDirection);
+			light.setInfluencingBounds(bound);
+			// 将光源添加到场景
+			_scene.addChild(light);
 			// objTrans.compile();
 			_scene.compile();
 			_simple_u.addBranchGraph(_scene);
@@ -342,6 +347,79 @@ public class Viewport3d extends Viewport implements MyObserver {
 
 	public int getWindowCenter() {
 		return _window_center;
+	}
+
+	private void create_MarchingCube(TransformGroup objTrans, Segment seg, int size, float distance) {
+		int w = _slices.getImageWidth();
+		int h = _slices.getImageHeight();
+		int s = _slices.getNumberOfImages();
+
+		for (int z = 0; z < s; z = z + size)
+			for (int y = 0; y < h; y = y + size)
+				for (int x = 0; x < w; x = x + size) {
+					if (seg.getMask(z).get(y, x)) {
+						float px = (x - w / 2.0f) * distance;
+						float py = (y - h / 2.0f) * distance;
+						float pz = (z - s / 2.0f) * (256.0f / s) * distance;
+						Point3f pos = new Point3f(px, py, pz);
+
+						int index = 0;
+						if (x + size < w && y + size < h && z + size < s)
+							index = getMCLookuotabIndex(seg, x, y, z, size);
+
+						if (index > 0 && index < 0xff) {
+							IndexedTriangleArray ita = _mc.getTriArray(index);
+							// resetTriangleArray(ita, pos, size, distance);
+
+							Point3f p = new Point3f();
+							for (int i = 0; i < ita.getVertexCount(); i++) {
+								ita.getCoordinate(i, p);
+								p.scale(size * distance);
+								p.add(pos);
+								ita.setCoordinate(i, p);
+							}
+
+							// ColoringAttributes color_ca = new ColoringAttributes();
+							// color_ca.setColor(new Color3f(0, 0, 1.0f));
+							// Appearance ap = new Appearance();
+							// ap.setColoringAttributes(color_ca);
+
+							objTrans.addChild(new Shape3D(ita));
+						}
+					}
+
+				}
+	}
+
+	private void resetTriangleArray(IndexedTriangleArray ita, Point3f pos, int size, float dis) {
+		Point3f p = new Point3f();
+		for (int i = 0; i < ita.getVertexCount(); i++) {
+			ita.getCoordinate(i, p);
+			p.scale(size * dis);
+			p.add(pos);
+			ita.setCoordinate(i, p);
+		}
+	}
+
+	private int getMCLookuotabIndex(Segment seg, int x, int y, int z, int size) {
+		int index = 0;
+		if (seg.getMask(z).get(x, y))
+			index |= (int) (1) << 0;
+		if (seg.getMask(z).get(x + size, y))
+			index |= (int) (1) << 1;
+		if (seg.getMask(z + size).get(x + size, y))
+			index |= (int) (1) << 2;
+		if (seg.getMask(z + size).get(x, y))
+			index |= (int) (1) << 3;
+		if (seg.getMask(z).get(x, y + size))
+			index |= (int) (1) << 4;
+		if (seg.getMask(z).get(x + size, y + size))
+			index |= (int) (1) << 5;
+		if (seg.getMask(z + size).get(x + size, y + size))
+			index |= (int) (1) << 6;
+		if (seg.getMask(z + size).get(x, y + size))
+			index |= (int) (1) << 7;
+		return index;
 	}
 
 	private Shape3D create_pointcloud(Segment seg, float distance) {

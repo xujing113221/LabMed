@@ -1,10 +1,7 @@
 package misc;
 
 import javax.media.j3d.IndexedTriangleArray;
-import javax.media.j3d.TriangleStripArray;
 import javax.vecmath.Point3f;
-
-import com.jogamp.nativewindow.util.Point;
 
 public class CubeCase {
 

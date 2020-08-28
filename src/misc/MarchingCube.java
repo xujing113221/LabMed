@@ -31,7 +31,7 @@ public class MarchingCube {
             new Point3f(len / 2, len, 0), new Point3f(len, len, len / 2), new Point3f(len / 2, len, len),
             new Point3f(0, len, len / 2) };
 
-    private final static HashMap<Integer, IndexedTriangleArray> _lookupTab = new HashMap<Integer, IndexedTriangleArray>();
+    private static HashMap<Integer, IndexedTriangleArray> _lookupTab = new HashMap<Integer, IndexedTriangleArray>();
 
     public MarchingCube() {
         super();
@@ -52,7 +52,7 @@ public class MarchingCube {
                 _v[5], _v[9], _v[8]));
         _lookupTab.put(CASE_14, getCase14TriangleArray(_v[4], _v[0], _v[7], _v[9], _v[1], _v[10]));
 
-        // roll_dice();
+        roll_dice();
     }
 
     public IndexedTriangleArray getTriArray(int index) {
