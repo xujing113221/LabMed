@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CodeLens (Launch) - CubeCase",
+            "request": "launch",
+            "mainClass": "misc.CubeCase",
+            "projectName": "lab_med"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - MarchingCube",
+            "request": "launch",
+            "mainClass": "misc.MarchingCube",
+            "projectName": "lab_med"
+        },
+        {
+            "type": "java",
             "name": "Debug (Launch) - Current File",
             "request": "launch",
             "mainClass": "main.LabMed"

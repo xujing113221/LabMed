@@ -11,14 +11,13 @@ import javax.media.j3d.*;
 
 import javax.vecmath.*;
 import com.sun.j3d.utils.universe.SimpleUniverse;
-import com.jogamp.opengl.Threading.Mode;
-import com.sun.j3d.utils.behaviors.mouse.MouseBehaviorCallback;
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseTranslate;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
 
 import misc.MyObservable;
 import misc.MyObserver;
+import misc.MarchingCube;
 
 /**
  * Three dimensional viewport for viewing the dicom images + segmentations.
@@ -76,8 +75,9 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// trans3d.setScale(new Vector3d(1.0d, 1.0d, (256.0d / 113.d)));
 			TransformGroup objTrans = new TransformGroup(trans3d);
 			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-			// TODO: 是不是需要编译complies
-			objTrans.addChild(draw_cube(_distance));
+			// objTrans.addChild(draw_cube(_distance));
+			objTrans.addChild(MCCube());
+			objTrans.addChild(create_MarchingCube(MarchingCube.CASE_14));
 			if (_slices.getNumberOfImages() != 0) {
 				if (_show_original_data) {
 					float transparency = 0.1f;
@@ -383,6 +383,20 @@ public class Viewport3d extends Viewport implements MyObserver {
 		return point_shape;
 	}
 
+	private Shape3D create_MarchingCube(int index) {
+		MarchingCube mc = new MarchingCube();
+		IndexedTriangleArray ita = mc.getTriArray(index);
+
+		ColoringAttributes color_ca = new ColoringAttributes();
+		color_ca.setColor(new Color3f(0, 0, 1.0f));
+
+		Appearance ap = new Appearance();
+		ap.setColoringAttributes(color_ca);
+
+		Shape3D point_shape = new Shape3D(ita, ap);
+		return point_shape;
+	}
+
 	private Shape3D draw_cube(float distance) {
 		LineArray lines = new LineArray(24, LineArray.COORDINATES);
 
@@ -473,5 +487,51 @@ public class Viewport3d extends Viewport implements MyObserver {
 
 	public void toggleOrthoSlice() {
 		_ortho_slice = !_ortho_slice;
+	}
+
+	private Shape3D MCCube() {
+		LineArray lines = new LineArray(24, LineArray.COORDINATES);
+
+		float a = 0.5f;
+		int n = 0;
+		lines.setCoordinate(n++, new Point3f(a + a, a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, -a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, -a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, -a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, -a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, a + a, a + a));
+
+		lines.setCoordinate(n++, new Point3f(-a + a, a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, a + a, a + a));
+
+		lines.setCoordinate(n++, new Point3f(a + a, a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, -a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, -a + a));
+		lines.setCoordinate(n++, new Point3f(a + a, -a + a, a + a));
+		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, a + a));
+
+		ColoringAttributes color_ca = new ColoringAttributes();
+		color_ca.setColor(new Color3f(Color.white));
+		LineAttributes linea = new LineAttributes();
+		// linea.setLineWidth(1.0f);
+		linea.setLineAntialiasingEnable(true);
+
+		Appearance ap = new Appearance();
+		ap.setColoringAttributes(color_ca);
+		ap.setLineAttributes(linea);
+
+		Shape3D cube = new Shape3D(lines, ap);
+		return cube;
 	}
 }
