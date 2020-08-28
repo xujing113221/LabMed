@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GraphicsConfiguration;
 import java.awt.image.BufferedImage;
+import java.time.YearMonth;
 
 import javax.media.j3d.*;
 import com.sun.j3d.utils.geometry.Sphere;
@@ -77,9 +78,9 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// trans3d.setScale(new Vector3d(1.0d, 1.0d, (256.0d / 113.d)));
 			TransformGroup objTrans = new TransformGroup(trans3d);
 			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-			objTrans.addChild(draw_cube(_distance));
-			// objTrans.addChild(MCCube());
-			// objTrans.addChild(create_MarchingCube(MarchingCube.CASE_14));
+			// objTrans.addChild(draw_cube(_distance));
+			objTrans.addChild(MCCube());
+			objTrans.addChild(create_MarchingCube(1));
 
 			if (_slices.getNumberOfImages() != 0) {
 				if (_show_original_data) {
@@ -101,7 +102,7 @@ public class Viewport3d extends Viewport implements MyObserver {
 			if (!_map_name_to_seg.isEmpty()) {
 				for (String seg_name : _map_name_to_seg.keySet()) {
 					Segment seg = _slices.getSegment(seg_name);
-					// objTrans.addChild(create_pointcloud(seg, _distance));
+					objTrans.addChild(create_pointcloud(seg, _distance));
 					create_MarchingCube(objTrans, seg, 3, _distance);
 				}
 			}
@@ -143,7 +144,7 @@ public class Viewport3d extends Viewport implements MyObserver {
 
 			// 设置光源
 			Color3f lightColor = new Color3f(0.0f, 0.0f, 1.0f);
-			Vector3f lightDirection = new Vector3f(4.0f, -7.0f, -12.0f);
+			Vector3f lightDirection = new Vector3f(400.0f, -700.0f, -1200.0f);
 			// 设置定向光的颜色和影响范围
 			DirectionalLight light = new DirectionalLight(lightColor, lightDirection);
 			light.setInfluencingBounds(bound);
@@ -357,48 +358,37 @@ public class Viewport3d extends Viewport implements MyObserver {
 		for (int z = 0; z < s; z = z + size)
 			for (int y = 0; y < h; y = y + size)
 				for (int x = 0; x < w; x = x + size) {
-					if (seg.getMask(z).get(y, x)) {
+
+					int index = 0;
+					if (x + size < w && y + size < h && z + size < s)
+						index = getMCLookuotabIndex(seg, x, y, z, size);
+
+					if (index > 0 && index < 0xff) {
 						float px = (x - w / 2.0f) * distance;
 						float py = (y - h / 2.0f) * distance;
 						float pz = (z - s / 2.0f) * (256.0f / s) * distance;
 						Point3f pos = new Point3f(px, py, pz);
 
-						int index = 0;
-						if (x + size < w && y + size < h && z + size < s)
-							index = getMCLookuotabIndex(seg, x, y, z, size);
+						IndexedTriangleArray ita = _mc.getTriArray(index);
 
-						if (index > 0 && index < 0xff) {
-							IndexedTriangleArray ita = _mc.getTriArray(index);
-							// resetTriangleArray(ita, pos, size, distance);
+						// resetTriangleArray(ita, pos, size, distance);
 
-							Point3f p = new Point3f();
-							for (int i = 0; i < ita.getVertexCount(); i++) {
-								ita.getCoordinate(i, p);
-								p.scale(size * distance);
-								p.add(pos);
-								ita.setCoordinate(i, p);
-							}
-
-							// ColoringAttributes color_ca = new ColoringAttributes();
-							// color_ca.setColor(new Color3f(0, 0, 1.0f));
-							// Appearance ap = new Appearance();
-							// ap.setColoringAttributes(color_ca);
-
-							objTrans.addChild(new Shape3D(ita));
+						Point3f p = new Point3f();
+						for (int i = 0; i < ita.getVertexCount(); i++) {
+							ita.getCoordinate(i, p);
+							p.scale(size * distance);
+							p.add(pos);
+							ita.setCoordinate(i, p);
 						}
+						ColoringAttributes color_ca = new ColoringAttributes();
+						color_ca.setColor(new Color3f(0, 0, 1.0f));
+						Appearance ap = new Appearance();
+						ap.setColoringAttributes(color_ca);
+						objTrans.addChild(new Shape3D(ita, ap));
+
 					}
 
 				}
-	}
-
-	private void resetTriangleArray(IndexedTriangleArray ita, Point3f pos, int size, float dis) {
-		Point3f p = new Point3f();
-		for (int i = 0; i < ita.getVertexCount(); i++) {
-			ita.getCoordinate(i, p);
-			p.scale(size * dis);
-			p.add(pos);
-			ita.setCoordinate(i, p);
-		}
 	}
 
 	private int getMCLookuotabIndex(Segment seg, int x, int y, int z, int size) {
