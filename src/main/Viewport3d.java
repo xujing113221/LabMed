@@ -83,14 +83,16 @@ public class Viewport3d extends Viewport implements MyObserver {
 			trans3d.rotX(Math.PI / 2.0d); // rotate
 			// trans3d.rotY(Math.PI / 4.0d);
 			// trans3d.setScale(new Vector3d(1.0d, 1.0d, (256.0d / 113.d)));
-			TransformGroup objTrans = new TransformGroup(trans3d);
-			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-			objTrans.addChild(draw_cube(_distance));
 
-			// test for marching cube lookup table;
-			// objTrans.addChild(MCCube());
-			// objTrans.addChild(create_MarchingCube(index));
-			// showMc(objTrans, index);
+			TransformGroup transfG = new TransformGroup(trans3d);
+			transfG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+			transfG.addChild(draw_cube(_distance));
+
+			Transform3D transf = new Transform3D();
+			transf.setScale(new Vector3d(1, -1, 1));
+			TransformGroup objTrans = new TransformGroup(transf);
+			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+			transfG.addChild(objTrans);
 
 			if (_slices.getNumberOfImages() != 0) {
 				if (_show_original_data) {
@@ -114,26 +116,33 @@ public class Viewport3d extends Viewport implements MyObserver {
 					Segment seg = _slices.getSegment(seg_name);
 					if (_point_cloud)
 						objTrans.addChild(create_pointcloud(seg, _distance));
-					if (_marching_cube)
-						create_MarchingCube(objTrans, seg, _mc_size, _distance);
+					if (_marching_cube) {
+						Transform3D t3d = new Transform3D();
+						t3d.rotZ(Math.PI / -2.0d); // rotate
+						TransformGroup tf = new TransformGroup(t3d);
+						tf.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+						create_MarchingCube(tf, seg, _mc_size, _distance);
+						transfG.addChild(tf);
+					}
+
 				}
 			}
 
 			BoundingSphere bound = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), Double.MAX_VALUE);
 			// 添加通过鼠标左键控制3D物体旋转的对象
 			MouseRotate mrotate = new MouseRotate();
-			mrotate.setTransformGroup(objTrans);
-			objTrans.addChild(mrotate);
+			mrotate.setTransformGroup(transfG);
+			transfG.addChild(mrotate);
 			mrotate.setSchedulingBounds(bound);
 			// 添加鼠标右键的拖拉运动控制3D物体（X,Y）平移
 			MouseTranslate mtrans = new MouseTranslate();
-			mtrans.setTransformGroup(objTrans);
-			objTrans.addChild(mtrans);
+			mtrans.setTransformGroup(transfG);
+			transfG.addChild(mtrans);
 			mtrans.setSchedulingBounds(bound);
 			// 添加鼠标滚轮控制3D物体沿Z轴
 			MouseWheelZoom mzoom = new MouseWheelZoom();
-			mzoom.setTransformGroup(objTrans);
-			objTrans.addChild(mzoom);
+			mzoom.setTransformGroup(transfG);
+			transfG.addChild(mzoom);
 			mzoom.setSchedulingBounds(bound);
 
 			DirectionalLight light = new DirectionalLight(new Color3f(0.0f, 1.0f, 0.0f),
@@ -147,7 +156,7 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// _scene.addChild(d_light);
 
 			// objTrans.addChild(new Sphere(128 * _distance));
-			_scene.addChild(objTrans);
+			_scene.addChild(transfG);
 			_scene.compile();
 			_simple_u.addBranchGraph(_scene);
 		}
