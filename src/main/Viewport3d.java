@@ -6,12 +6,15 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GraphicsConfiguration;
 import java.awt.image.BufferedImage;
-import java.time.YearMonth;
 
 import javax.media.j3d.*;
 import com.sun.j3d.utils.geometry.Sphere;
 
 import javax.vecmath.*;
+import javax.xml.soap.SOAPHeaderElement;
+import com.sun.j3d.utils.geometry.GeometryInfo;
+import com.sun.j3d.utils.geometry.NormalGenerator;
+
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseTranslate;
@@ -38,6 +41,7 @@ public class Viewport3d extends Viewport implements MyObserver {
 	private int[] _slices_pos = { 50, 128, 128 };
 	private int _v2d_view_mode = 0;
 	private boolean _show_original_data = false;
+	// private int _test_point = 1;
 	private MarchingCube _mc = new MarchingCube();
 
 	/**
@@ -78,9 +82,10 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// trans3d.setScale(new Vector3d(1.0d, 1.0d, (256.0d / 113.d)));
 			TransformGroup objTrans = new TransformGroup(trans3d);
 			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-			// objTrans.addChild(draw_cube(_distance));
-			objTrans.addChild(MCCube());
-			objTrans.addChild(create_MarchingCube(1));
+			objTrans.addChild(draw_cube(_distance));
+			// objTrans.addChild(MCCube());
+			// objTrans.addChild(create_MarchingCube(index));
+			// showMc(objTrans, index);
 
 			if (_slices.getNumberOfImages() != 0) {
 				if (_show_original_data) {
@@ -102,13 +107,10 @@ public class Viewport3d extends Viewport implements MyObserver {
 			if (!_map_name_to_seg.isEmpty()) {
 				for (String seg_name : _map_name_to_seg.keySet()) {
 					Segment seg = _slices.getSegment(seg_name);
-					objTrans.addChild(create_pointcloud(seg, _distance));
+					// objTrans.addChild(create_pointcloud(seg, _distance));
 					create_MarchingCube(objTrans, seg, 3, _distance);
 				}
 			}
-
-			// objTrans.addChild(new Sphere(128 * _distance));
-			_scene.addChild(objTrans);
 
 			BoundingSphere bound = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), Double.MAX_VALUE);
 			// 添加通过鼠标左键控制3D物体旋转的对象
@@ -143,18 +145,35 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// });
 
 			// 设置光源
-			Color3f lightColor = new Color3f(0.0f, 0.0f, 1.0f);
-			Vector3f lightDirection = new Vector3f(400.0f, -700.0f, -1200.0f);
+			Color3f lightColor = new Color3f(0.0f, 1.0f, 0.0f);
+			Vector3f lightDirection = new Vector3f(4.0f, -7.0f, -12.0f);
 			// 设置定向光的颜色和影响范围
 			DirectionalLight light = new DirectionalLight(lightColor, lightDirection);
 			light.setInfluencingBounds(bound);
 			// 将光源添加到场景
 			_scene.addChild(light);
+
+			// AmbientLight a_light = new AmbientLight();
+			// a_light.setInfluencingBounds(bound);
+			// a_light.setColor(new Color3f(0.0f, 0.0f, 0.8f));
+
+			// Vector3f dir = new Vector3f(0.8f, 0.0f, 1.0f);
+			// dir.normalize();
+			// // directional light
+			// DirectionalLight d_light = new DirectionalLight();
+			// d_light.setInfluencingBounds(bound);
+			// d_light.setColor(new Color3f(1.0f, 0, 0));
+			// d_light.setDirection(dir);
+
+			// _scene.addChild(d_light);
+
+			// objTrans.addChild(new Sphere(128 * _distance));
+
+			_scene.addChild(objTrans);
 			// objTrans.compile();
-			_scene.compile();
-			_simple_u.addBranchGraph(_scene);
+
 			// 设置背景
-			// Color3f bgColor = new Color3f(0.0f, 0.0f, 0.0f);
+			// Color3f bgColor = new Color3f(1.0f, 0.0f, 0.0f);
 			// Background bg = new Background(bgColor);
 			// bg.setApplicationBounds(bound);
 			// _scene.addChild(bg);
@@ -162,6 +181,9 @@ public class Viewport3d extends Viewport implements MyObserver {
 			// 添加模型
 			// objTrans.addChild(new ColorCube(0.5f));
 			// objTrans.addChild(new Sphere(0.5f));
+
+			_scene.compile();
+			_simple_u.addBranchGraph(_scene);
 		}
 
 	}
@@ -178,6 +200,8 @@ public class Viewport3d extends Viewport implements MyObserver {
 		_window_center = (int) (50 * 40.95);
 		_window_width = (int) (50 * 40.95);
 		_ortho_slice = false;
+
+		_mc.roll_dice();
 
 		this.setPreferredSize(new Dimension(DEF_WIDTH, DEF_HEIGHT));
 		this.setLayout(new BorderLayout());
@@ -198,7 +222,23 @@ public class Viewport3d extends Viewport implements MyObserver {
 	 * calculates the 3d data structurs.
 	 */
 	public void update_view() {
+		// if (_test_point > 255)
+		// _test_point = 1;
+		// System.out.println(Integer.toBinaryString(_test_point));
+
+		// Point3f p = new Point3f();
+		// IndexedTriangleArray _trias = MarchingCube._lookupTab.get(_test_point);
+		// for (int i = 0; i < _trias.getVertexCount(); i++) {
+		// _trias.getCoordinate(i, p);
+		// System.out.println(p.toString());
+		// }
+
+		// _panel3d.createScene(_test_point++);
 		_panel3d.createScene();
+	}
+
+	public void showMc(TransformGroup tg, int index) {
+		tg.addChild(create_MarchingCube(index));
 	}
 
 	private Shape3D create_texture(int view_mode, int active, double distance, float transparency) {
@@ -371,21 +411,26 @@ public class Viewport3d extends Viewport implements MyObserver {
 
 						IndexedTriangleArray ita = _mc.getTriArray(index);
 
-						// resetTriangleArray(ita, pos, size, distance);
-
 						Point3f p = new Point3f();
 						for (int i = 0; i < ita.getVertexCount(); i++) {
 							ita.getCoordinate(i, p);
-							p.scale(size * distance);
+							p.x = p.x * size * distance;
+							p.y = p.y * size * distance;
+							p.z = p.z * size * distance * w / s;
+							// p.scale(size * distance);
 							p.add(pos);
 							ita.setCoordinate(i, p);
 						}
-						ColoringAttributes color_ca = new ColoringAttributes();
-						color_ca.setColor(new Color3f(0, 0, 1.0f));
-						Appearance ap = new Appearance();
-						ap.setColoringAttributes(color_ca);
-						objTrans.addChild(new Shape3D(ita, ap));
 
+						final GeometryInfo gi = new GeometryInfo(ita);
+						final NormalGenerator normalGenerator = new NormalGenerator();
+						normalGenerator.generateNormals(gi);
+						final GeometryArray geometryArray = gi.getGeometryArray();
+
+						Appearance ap = new Appearance();
+						Material ma = new Material();
+						ap.setMaterial(ma);
+						objTrans.addChild(new Shape3D(geometryArray, ap));
 					}
 
 				}

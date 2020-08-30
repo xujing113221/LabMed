@@ -24,14 +24,14 @@ public class MarchingCube {
     public static final int[] BaseCase = { 0b00000001, 0b00000011, 0b00000101, 0b01000001, 0b00110010, 0b01000011,
             0b01001010, 0b00110011, 0b10110001, 0b01101001, 0b01110001, 0b00111010, 0b10100101, 0b10110010 };
 
-    public static float len = 1.0f;
+    public static final float len = 1.0f;
     public static final Point3f[] _v = { new Point3f(len / 2, 0, 0), new Point3f(len, 0, len / 2),
             new Point3f(len / 2, 0, len), new Point3f(0, 0, len / 2), new Point3f(0, len / 2, 0),
             new Point3f(len, len / 2, 0), new Point3f(len, len / 2, len), new Point3f(0, len / 2, len),
             new Point3f(len / 2, len, 0), new Point3f(len, len, len / 2), new Point3f(len / 2, len, len),
             new Point3f(0, len, len / 2) };
 
-    private static HashMap<Integer, IndexedTriangleArray> _lookupTab = new HashMap<Integer, IndexedTriangleArray>();
+    public static final HashMap<Integer, IndexedTriangleArray> _lookupTab = new HashMap<Integer, IndexedTriangleArray>();
 
     public MarchingCube() {
         super();
@@ -52,11 +52,29 @@ public class MarchingCube {
                 _v[5], _v[9], _v[8]));
         _lookupTab.put(CASE_14, getCase14TriangleArray(_v[4], _v[0], _v[7], _v[9], _v[1], _v[10]));
 
-        roll_dice();
+        // roll_dice();
     }
 
     public IndexedTriangleArray getTriArray(int index) {
-        return _lookupTab.get(index);
+        IndexedTriangleArray _trias = _lookupTab.get(index);
+        int vertexcnt = _trias.getVertexCount();
+        int indexcnt = _trias.getIndexCount();
+
+        IndexedTriangleArray itrias = new IndexedTriangleArray(vertexcnt,
+                IndexedTriangleArray.COORDINATES | IndexedTriangleArray.NORMALS, indexcnt);
+
+        for (int i = 0; i < vertexcnt; i++) {
+            Point3f point = new Point3f();
+            _trias.getCoordinate(i, point);
+            itrias.setCoordinate(i, point);
+        }
+
+        for (int i = 0; i < indexcnt; i++) {
+            int newindex = _trias.getCoordinateIndex(i);
+            itrias.setCoordinateIndex(i, newindex);
+
+        }
+        return itrias;
     }
 
     public static IndexedTriangleArray getCase1TriangleArray(Point3f a, Point3f b, Point3f c) {
@@ -339,23 +357,41 @@ public class MarchingCube {
             CubeCase cube = new CubeCase(i, _lookupTab.get(i));
             for (int x = 0; x < 4; x++) {
                 cube.rotate_left();
-                if (!_lookupTab.containsKey(cube.get_cornerpias()))
-                    _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
                 for (int y = 0; y < 4; y++) {
                     cube.rotate_up();
-                    if (!_lookupTab.containsKey(cube.get_cornerpias()))
-                        _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
                     for (int z = 0; z < 4; z++) {
                         cube.inverter();
-                        if (!_lookupTab.containsKey(cube.get_cornerpias()))
-                            _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
+                        if (!_lookupTab.containsKey(cube.get_cornerpias())) {
+                            IndexedTriangleArray ita = cube.get_trias();
+                            int index = cube.get_cornerpias();
+                            // cube.print_triangles();
+                            _lookupTab.put(index, ita);
+                            // _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
+                        }
+                        // _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
                         cube.inverter();
                         cube.rotate_self();
-                        if (!_lookupTab.containsKey(cube.get_cornerpias()))
-                            _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
+                        if (!_lookupTab.containsKey(cube.get_cornerpias())) {
+                            IndexedTriangleArray ita = cube.get_trias();
+                            int index = cube.get_cornerpias();
+                            // cube.print_triangles();
+                            _lookupTab.put(index, ita);
+                            // print_triangles(64);
+                        }
+
                     }
                 }
             }
+        }
+        // print_triangles(64);
+    }
+
+    public void print_triangles(int index) {
+        Point3f p = new Point3f();
+        IndexedTriangleArray ita = _lookupTab.get(index);
+        for (int i = 0; i < ita.getVertexCount(); i++) {
+            ita.getCoordinate(i, p);
+            System.out.println(p.toString());
         }
     }
 
@@ -367,6 +403,17 @@ public class MarchingCube {
         mc.roll_dice();
 
         System.out.println("after: " + MarchingCube._lookupTab.size());
+
+        // for (int i = 0; i < 8; i++) {
+        // int in = 0b11 << i;
+        // if (in > 254)
+        // continue;
+        // System.out.println("index:" + Integer.toBinaryString(in));
+        // mc.print_triangles(in);
+        // }
+        mc.print_triangles(1);
+        mc.print_triangles(254);
+        mc.print_triangles(64);
     }
 
 }

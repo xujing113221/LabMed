@@ -1,6 +1,8 @@
 package misc;
 
+import javax.media.j3d.IndexedGeometryArray;
 import javax.media.j3d.IndexedTriangleArray;
+import javax.media.j3d.NodeComponent;
 import javax.vecmath.Point3f;
 
 public class CubeCase {
@@ -115,7 +117,24 @@ public class CubeCase {
     }
 
     public IndexedTriangleArray get_trias() {
-        return _trias;
+        int vertexcnt = _trias.getVertexCount();
+        int indexcnt = _trias.getIndexCount();
+
+        IndexedTriangleArray itrias = new IndexedTriangleArray(vertexcnt,
+                IndexedTriangleArray.COORDINATES | IndexedTriangleArray.NORMALS, indexcnt);
+
+        for (int i = 0; i < vertexcnt; i++) {
+            Point3f point = new Point3f();
+            _trias.getCoordinate(i, point);
+            itrias.setCoordinate(i, point);
+        }
+
+        for (int i = 0; i < indexcnt; i++) {
+            int newindex = _trias.getCoordinateIndex(i);
+            itrias.setCoordinateIndex(i, newindex);
+
+        }
+        return itrias;
     }
 
     public void print_triangles() {
@@ -168,26 +187,26 @@ public class CubeCase {
         // }
         // System.out.println("----------------");
         // cc.print_triangles();
-        cc.rotate_self();
-        cc.rotate_self();
-        cc.rotate_self();
-        cc.rotate_self();
+        // cc.rotate_self();
+        // cc.rotate_self();
+        // cc.rotate_self();
+        // cc.rotate_self();
         // System.out.println("----------------");
         // cc.print_triangles();
         // cc.rotate_up();
         // cc.rotate_up();
         // cc.rotate_up();
         // cc.rotate_up();
-        // System.out.println("----------------");
-        // cc.print_triangles();
+        System.out.println("----------------");
+        cc.print_triangles();
+        cc.rotate_left();
         // cc.rotate_left();
         // cc.rotate_left();
         // cc.rotate_left();
-        // cc.rotate_left();
-        // System.out.println("----------------");
-        // cc.print_triangles();
+        System.out.println("----------------");
+        cc.print_triangles();
         // cc.inverter();
-        System.out.println(Integer.toBinaryString(cc.get_cornerpias()));
+        // System.out.println(Integer.toBinaryString(cc.get_cornerpias()));
 
     }
 
