@@ -11,7 +11,6 @@ import javax.media.j3d.*;
 import com.sun.j3d.utils.geometry.Sphere;
 
 import javax.vecmath.*;
-import javax.xml.soap.SOAPHeaderElement;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.geometry.NormalGenerator;
 
@@ -37,10 +36,14 @@ public class Viewport3d extends Viewport implements MyObserver {
 	private int _window_center;
 
 	private boolean _ortho_slice;
+	private boolean _marching_cube;
+	private boolean _point_cloud;
+	private boolean _show_original_data;
 
 	private int[] _slices_pos = { 50, 128, 128 };
 	private int _v2d_view_mode = 0;
-	private boolean _show_original_data = false;
+	private int _mc_size;
+
 	// private int _test_point = 1;
 	private MarchingCube _mc = new MarchingCube();
 
@@ -83,6 +86,8 @@ public class Viewport3d extends Viewport implements MyObserver {
 			TransformGroup objTrans = new TransformGroup(trans3d);
 			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 			objTrans.addChild(draw_cube(_distance));
+
+			// test for marching cube lookup table;
 			// objTrans.addChild(MCCube());
 			// objTrans.addChild(create_MarchingCube(index));
 			// showMc(objTrans, index);
@@ -107,8 +112,10 @@ public class Viewport3d extends Viewport implements MyObserver {
 			if (!_map_name_to_seg.isEmpty()) {
 				for (String seg_name : _map_name_to_seg.keySet()) {
 					Segment seg = _slices.getSegment(seg_name);
-					// objTrans.addChild(create_pointcloud(seg, _distance));
-					create_MarchingCube(objTrans, seg, 3, _distance);
+					if (_point_cloud)
+						objTrans.addChild(create_pointcloud(seg, _distance));
+					if (_marching_cube)
+						create_MarchingCube(objTrans, seg, _mc_size, _distance);
 				}
 			}
 
@@ -129,59 +136,18 @@ public class Viewport3d extends Viewport implements MyObserver {
 			objTrans.addChild(mzoom);
 			mzoom.setSchedulingBounds(bound);
 
-			// mzoom.setupCallback(new MouseBehaviorCallback() {
-			// public void transformChanged(int arg0, Transform3D tf) {
-			// double fx = mzoom.getFactor();
-			// System.out.println("zoom factor: " + arg0);
-			// }
-			// });
-
-			// mrotate.setupCallback(new MouseBehaviorCallback() {
-			// public void transformChanged(int arg0, Transform3D tf) {
-			// double fx = mrotate.getXFactor();
-			// double fy = mrotate.getYFactor();
-			// System.out.println("rotate factor: " + fx + " + " + fy);
-			// }
-			// });
-
-			// 设置光源
-			Color3f lightColor = new Color3f(0.0f, 1.0f, 0.0f);
-			Vector3f lightDirection = new Vector3f(4.0f, -7.0f, -12.0f);
-			// 设置定向光的颜色和影响范围
-			DirectionalLight light = new DirectionalLight(lightColor, lightDirection);
+			DirectionalLight light = new DirectionalLight(new Color3f(0.0f, 1.0f, 0.0f),
+					new Vector3f(4.0f, -7.0f, -12.0f));
 			light.setInfluencingBounds(bound);
-			// 将光源添加到场景
 			_scene.addChild(light);
 
 			// AmbientLight a_light = new AmbientLight();
 			// a_light.setInfluencingBounds(bound);
 			// a_light.setColor(new Color3f(0.0f, 0.0f, 0.8f));
-
-			// Vector3f dir = new Vector3f(0.8f, 0.0f, 1.0f);
-			// dir.normalize();
-			// // directional light
-			// DirectionalLight d_light = new DirectionalLight();
-			// d_light.setInfluencingBounds(bound);
-			// d_light.setColor(new Color3f(1.0f, 0, 0));
-			// d_light.setDirection(dir);
-
 			// _scene.addChild(d_light);
 
 			// objTrans.addChild(new Sphere(128 * _distance));
-
 			_scene.addChild(objTrans);
-			// objTrans.compile();
-
-			// 设置背景
-			// Color3f bgColor = new Color3f(1.0f, 0.0f, 0.0f);
-			// Background bg = new Background(bgColor);
-			// bg.setApplicationBounds(bound);
-			// _scene.addChild(bg);
-
-			// 添加模型
-			// objTrans.addChild(new ColorCube(0.5f));
-			// objTrans.addChild(new Sphere(0.5f));
-
 			_scene.compile();
 			_simple_u.addBranchGraph(_scene);
 		}
@@ -200,6 +166,11 @@ public class Viewport3d extends Viewport implements MyObserver {
 		_window_center = (int) (50 * 40.95);
 		_window_width = (int) (50 * 40.95);
 		_ortho_slice = false;
+		_marching_cube = false;
+		_point_cloud = false;
+		_show_original_data = false;
+
+		_mc_size = 3;
 
 		_mc.roll_dice();
 
@@ -222,18 +193,6 @@ public class Viewport3d extends Viewport implements MyObserver {
 	 * calculates the 3d data structurs.
 	 */
 	public void update_view() {
-		// if (_test_point > 255)
-		// _test_point = 1;
-		// System.out.println(Integer.toBinaryString(_test_point));
-
-		// Point3f p = new Point3f();
-		// IndexedTriangleArray _trias = MarchingCube._lookupTab.get(_test_point);
-		// for (int i = 0; i < _trias.getVertexCount(); i++) {
-		// _trias.getCoordinate(i, p);
-		// System.out.println(p.toString());
-		// }
-
-		// _panel3d.createScene(_test_point++);
 		_panel3d.createScene();
 	}
 
@@ -353,8 +312,6 @@ public class Viewport3d extends Viewport implements MyObserver {
 			min = 0;
 		if (max > 4095)
 			max = 4095;
-		// int min = 1000;
-		// int max = 4095;
 
 		if (pixel > max)
 			value = 255;
@@ -362,7 +319,6 @@ public class Viewport3d extends Viewport implements MyObserver {
 			value = 0;
 		else
 			value = (int) ((pixel - min) * (255.0 / (max - min)));
-		// return (0xff - value);
 		return value;
 	}
 
@@ -598,8 +554,20 @@ public class Viewport3d extends Viewport implements MyObserver {
 		// }
 	}
 
+	public void setMCsize(int size) {
+		this._mc_size = size;
+	}
+
 	public void toggleOrthoSlice() {
 		_ortho_slice = !_ortho_slice;
+	}
+
+	public void toggleMarchingCube() {
+		_marching_cube = !_marching_cube;
+	}
+
+	public void togglePointCloud() {
+		_point_cloud = !_point_cloud;
 	}
 
 	private Shape3D MCCube() {

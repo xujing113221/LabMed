@@ -166,6 +166,7 @@ public class MenuBar extends JMenuBar {
 
 		// -------------------------------------------------------------------------------------
 		_tools.showTool("3D Setting", new Tool3dSetting(_v3d));
+		_tools.showTool("Marching Setting", new MarchingCubeSetting(_v3d));
 	}
 
 	/**

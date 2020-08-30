@@ -8,38 +8,37 @@ import javax.swing.event.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class Tool3dSetting extends JPanel {
+public class MarchingCubeSetting extends JPanel {
     private static final long serialVersionUID = 1L;
     // private Segment _rg_seg;
-    private JSlider _distance_slider;
-    private JLabel _distance_label;
+    private JSlider _size_slider;
+    private JLabel _size_label;
     private JButton _update_Btn;
     // private static JLabel _postion_label = null;
 
-    public Tool3dSetting(Viewport3d v3d) {
-        int range_max = 500;
-        float dis_range = 0.01f;
-        JLabel win_set_tilte = new JLabel("3D Setting");
+    public MarchingCubeSetting(Viewport3d v3d) {
+        int range_max = 10;
+        JLabel win_set_tilte = new JLabel("Marching Setting");
 
-        _distance_label = new JLabel("Distance: " + String.format("%.4f", v3d.getPointCloudDis()));
-        _distance_slider = new JSlider(0, range_max, (int) (v3d.getPointCloudDis() * range_max / dis_range));
-        _distance_slider.addChangeListener(new ChangeListener() {
+        _size_label = new JLabel("Cube Size: " + String.format("%d", 3));
+        _size_slider = new JSlider(1, range_max, 3);
+        _size_slider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider) e.getSource();
                 if (source.getValueIsAdjusting()) {
-                    float distance = (float) source.getValue() / (float) range_max * dis_range;
-                    _distance_label.setText("Distance: " + String.format("%.3f", distance));
-                    v3d.setPointCloudDis(distance);
+                    int size = source.getValue();
+                    _size_label.setText("Size: " + String.format("%d", size));
+                    v3d.setMCsize(size);
                     v3d.update_view();
                     // System.out.println("_varianz_slider stateChanged: " + _varianz);
                 }
             }
         });
 
-        _update_Btn = new JButton("Update: Point Cloud");
+        _update_Btn = new JButton("Update: MC");
         _update_Btn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                v3d.togglePointCloud();
+                v3d.toggleMarchingCube();
                 v3d.update_view();
             }
         });
@@ -64,12 +63,12 @@ public class Tool3dSetting extends JPanel {
         c.weightx = 0.01;
         c.gridx = 0;
         c.gridy = 1;
-        this.add(_distance_label, c);
+        this.add(_size_label, c);
 
         c.weightx = 0.99;
         c.gridx = 1;
         c.gridy = 1;
-        this.add(_distance_slider, c);
+        this.add(_size_slider, c);
 
     }
 
