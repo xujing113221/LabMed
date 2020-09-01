@@ -31,10 +31,6 @@ import misc.MarchingCube;
 public class Viewport3d extends Viewport implements MyObserver {
 	private static final long serialVersionUID = 1L;
 
-	// TODO: 把下面两个变量放在父类中
-	private int _window_width;
-	private int _window_center;
-
 	private boolean _ortho_slice;
 	private boolean _marching_cube;
 	private boolean _point_cloud;
@@ -129,17 +125,14 @@ public class Viewport3d extends Viewport implements MyObserver {
 			}
 
 			BoundingSphere bound = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), Double.MAX_VALUE);
-			// 添加通过鼠标左键控制3D物体旋转的对象
 			MouseRotate mrotate = new MouseRotate();
 			mrotate.setTransformGroup(transfG);
 			transfG.addChild(mrotate);
 			mrotate.setSchedulingBounds(bound);
-			// 添加鼠标右键的拖拉运动控制3D物体（X,Y）平移
 			MouseTranslate mtrans = new MouseTranslate();
 			mtrans.setTransformGroup(transfG);
 			transfG.addChild(mtrans);
 			mtrans.setSchedulingBounds(bound);
-			// 添加鼠标滚轮控制3D物体沿Z轴
 			MouseWheelZoom mzoom = new MouseWheelZoom();
 			mzoom.setTransformGroup(transfG);
 			transfG.addChild(mzoom);
@@ -150,12 +143,6 @@ public class Viewport3d extends Viewport implements MyObserver {
 			light.setInfluencingBounds(bound);
 			_scene.addChild(light);
 
-			// AmbientLight a_light = new AmbientLight();
-			// a_light.setInfluencingBounds(bound);
-			// a_light.setColor(new Color3f(0.0f, 0.0f, 0.8f));
-			// _scene.addChild(d_light);
-
-			// objTrans.addChild(new Sphere(128 * _distance));
 			_scene.addChild(transfG);
 			_scene.compile();
 			_simple_u.addBranchGraph(_scene);
@@ -203,10 +190,6 @@ public class Viewport3d extends Viewport implements MyObserver {
 	 */
 	public void update_view() {
 		_panel3d.createScene();
-	}
-
-	public void showMc(TransformGroup tg, int index) {
-		tg.addChild(create_MarchingCube(index));
 	}
 
 	private Shape3D create_texture(int view_mode, int active, double distance, float transparency) {
@@ -461,20 +444,6 @@ public class Viewport3d extends Viewport implements MyObserver {
 		return point_shape;
 	}
 
-	private Shape3D create_MarchingCube(int index) {
-		MarchingCube mc = new MarchingCube();
-		IndexedTriangleArray ita = mc.getTriArray(index);
-
-		ColoringAttributes color_ca = new ColoringAttributes();
-		color_ca.setColor(new Color3f(0, 0, 1.0f));
-
-		Appearance ap = new Appearance();
-		ap.setColoringAttributes(color_ca);
-
-		Shape3D point_shape = new Shape3D(ita, ap);
-		return point_shape;
-	}
-
 	private Shape3D draw_cube(float distance) {
 		LineArray lines = new LineArray(24, LineArray.COORDINATES);
 
@@ -544,9 +513,9 @@ public class Viewport3d extends Viewport implements MyObserver {
 			}
 		}
 
-		// if (msg._type == Message.M_NEW_IMAGE_LOADED) {
-		// update_view();
-		// }
+		if (msg._type == Message.M_NEW_IMAGE_LOADED) {
+			update_view();
+		}
 
 		if (msg._type == Message.M_NEW_ACTIVE_IMAGE) {
 			_slices_pos[_v2d_view_mode] = _slices.getActiveImageID();
@@ -554,13 +523,12 @@ public class Viewport3d extends Viewport implements MyObserver {
 				update_view();
 		}
 
-		// if (msg._type == Message.M_SEG_CHANGED) {
-		// String seg_name = ((Segment) msg._obj).getName();
-		// boolean update_needed = _map_name_to_seg.containsKey(seg_name);
-		// if (update_needed) {
-		// update_view();
-		// }
-		// }
+		if (msg._type == Message.M_SEG_CHANGED) {
+			String seg_name = ((Segment) msg._obj).getName();
+			boolean update_needed = _map_name_to_seg.containsKey(seg_name);
+			if (update_needed)
+				update_view();
+		}
 	}
 
 	public void setMCsize(int size) {
@@ -577,51 +545,5 @@ public class Viewport3d extends Viewport implements MyObserver {
 
 	public void togglePointCloud() {
 		_point_cloud = !_point_cloud;
-	}
-
-	private Shape3D MCCube() {
-		LineArray lines = new LineArray(24, LineArray.COORDINATES);
-
-		float a = 0.5f;
-		int n = 0;
-		lines.setCoordinate(n++, new Point3f(a + a, a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, -a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, -a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, -a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, -a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, a + a, a + a));
-
-		lines.setCoordinate(n++, new Point3f(-a + a, a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, a + a, a + a));
-
-		lines.setCoordinate(n++, new Point3f(a + a, a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, -a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, -a + a));
-		lines.setCoordinate(n++, new Point3f(a + a, -a + a, a + a));
-		lines.setCoordinate(n++, new Point3f(-a + a, -a + a, a + a));
-
-		ColoringAttributes color_ca = new ColoringAttributes();
-		color_ca.setColor(new Color3f(Color.white));
-		LineAttributes linea = new LineAttributes();
-		// linea.setLineWidth(1.0f);
-		linea.setLineAntialiasingEnable(true);
-
-		Appearance ap = new Appearance();
-		ap.setColoringAttributes(color_ca);
-		ap.setLineAttributes(linea);
-
-		Shape3D cube = new Shape3D(lines, ap);
-		return cube;
 	}
 }

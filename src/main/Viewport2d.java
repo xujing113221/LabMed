@@ -35,14 +35,8 @@ public class Viewport2d extends Viewport implements MyObserver {
 	// MemoryImageSource
 	private BufferedImage _bg_img;
 
-	private int _window_width;
-	private int _window_center;
-
 	public float RG_Varianz;
 	public Point3i RG_Seed;
-
-	// private float _rg_varianz;
-	// private Point3i _rg_seed;
 
 	// each segmentation image needs the same, those are stored in a hashtable
 	// and referenced by the segmentation name

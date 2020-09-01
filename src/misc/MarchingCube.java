@@ -361,29 +361,17 @@ public class MarchingCube {
                     cube.rotate_up();
                     for (int z = 0; z < 4; z++) {
                         cube.inverter();
-                        if (!_lookupTab.containsKey(cube.get_cornerpias())) {
-                            IndexedTriangleArray ita = cube.get_trias();
-                            int index = cube.get_cornerpias();
-                            // cube.print_triangles();
-                            _lookupTab.put(index, ita);
-                            // _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
-                        }
-                        // _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
+                        if (!_lookupTab.containsKey(cube.get_cornerpias()))
+                            _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
+
                         cube.inverter();
                         cube.rotate_self();
-                        if (!_lookupTab.containsKey(cube.get_cornerpias())) {
-                            IndexedTriangleArray ita = cube.get_trias();
-                            int index = cube.get_cornerpias();
-                            // cube.print_triangles();
-                            _lookupTab.put(index, ita);
-                            // print_triangles(64);
-                        }
-
+                        if (!_lookupTab.containsKey(cube.get_cornerpias()))
+                            _lookupTab.put(cube.get_cornerpias(), cube.get_trias());
                     }
                 }
             }
         }
-        // print_triangles(64);
     }
 
     public void print_triangles(int index) {
