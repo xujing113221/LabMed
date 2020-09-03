@@ -107,6 +107,7 @@ public class Segment {
 			_layers[i].clear();
 
 		voxelQ.add(seed); // start from seed.
+		int p_value = getPixelValueFormSlices(seed, slices);
 		while (!voxelQ.isEmpty()) {
 			Point3i p = voxelQ.poll();
 
@@ -118,7 +119,8 @@ public class Segment {
 
 			_layers[p.z].set(p.x, p.y, true); // mark the voxel, create segment.
 			_segPoints++;
-			int p_value = getPixelValueFormSlices(p, slices);
+			// int p_value = getPixelValueFormSlices(p, slices);
+
 			for (int i = 0; i < n6.length; i++) {
 				Point3i np = new Point3i(p.x + n6[i].x, p.y + n6[i].y, p.z + n6[i].z);
 				if (isVoxelInImageStack(np) && !isMarkedVoxel(np)) {
